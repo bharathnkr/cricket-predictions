@@ -303,13 +303,14 @@
   <!-- STATUS TAB -->
   <div class="screen" id="status-tab">
     <h2>👥 Who's Playing</h2>
-    <p class="subtitle">Syncs across all devices · auto-refreshes every 10s</p>
+    <p class="subtitle">When friends send prediction links, just open them here!</p>
     <div id="status-list" class="status-grid"></div>
     <div class="card center" style="margin-top:10px">
       <div style="font-size:0.8em;color:#6b7d96;margin-bottom:6px">Share this link with friends:</div>
       <div style="font-size:0.82em;color:#ff9933;font-weight:600;margin-top:4px;word-break:break-all;padding:10px;background:rgba(255,153,51,0.06);border-radius:10px" id="share-url"></div>
       <div class="spacer"></div>
-      <button class="btn btn-secondary" onclick="copyLink()" style="font-size:0.85em">📋 Copy Link</button>
+      <button class="btn btn-secondary" onclick="copyLink()" style="font-size:0.85em;margin-bottom:8px">📋 Copy Game Link</button>
+      <button class="btn btn-primary" onclick="shareAllPredictions()" style="font-size:0.85em">📤 Share All Predictions (for leaderboard)</button>
     </div>
   </div>
 
@@ -421,11 +422,6 @@ let QUESTIONS = [...DEFAULT_QUESTIONS];
 function getMaxPoints(){ return QUESTIONS.reduce((s,q) => s + q.points, 0); }
 
 const STORAGE_KEY = 'cricket_predictions_v4';
-const BLOB_ID = '019ccb3f-b70a-7099-a251-0d6a9d3c2e55';
-const BLOB_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
-
-let _cachedData = null;
-let _syncing = false;
 
 function loadAll(){
   try{
@@ -438,46 +434,64 @@ function loadAll(){
 function saveAll(data){
   data.questions = QUESTIONS;
   localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-  // Sync to cloud
-  syncToCloud(data);
-}
-
-async function syncToCloud(data){
-  if(_syncing) return;
-  _syncing = true;
-  try{
-    // Merge with cloud data first
-    const cloud = await fetchCloud();
-    const merged = { players:{...cloud.players, ...data.players}, results:{...cloud.results, ...data.results}, questions: data.questions };
-    await fetch(BLOB_URL, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(merged) });
-    // Update local with merged
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-  }catch(e){ console.log('Cloud sync failed, using local:', e); }
-  _syncing = false;
-}
-
-async function fetchCloud(){
-  try{
-    const res = await fetch(BLOB_URL);
-    return await res.json();
-  }catch{ return { players:{}, results:{} }; }
-}
-
-async function pullFromCloud(){
-  try{
-    const cloud = await fetchCloud();
-    if(cloud && cloud.players){
-      const local = loadAll();
-      const merged = { players:{...cloud.players, ...local.players}, results:{...cloud.results, ...local.results}, questions: local.questions };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
-      if(merged.questions) QUESTIONS = merged.questions;
-      renderStatus();
-      renderLeaderboard();
-    }
-  }catch(e){ console.log('Pull failed:', e); }
 }
 
 function saveQuestions(){ const data = loadAll(); saveAll(data); updateTotalPoints(); }
+
+// ===== URL-BASED SYNC =====
+// Encode a player's predictions into a shareable URL
+function generateShareLink(playerName, answers){
+  const payload = { n: playerName, a: answers };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  return window.location.origin + window.location.pathname + '?p=' + encoded;
+}
+
+// Decode and merge predictions from URL
+function importFromURL(){
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get('p');
+  if(!encoded) return false;
+  try{
+    const json = decodeURIComponent(escape(atob(encoded)));
+    const { n, a } = JSON.parse(json);
+    if(n && a){
+      const data = loadAll();
+      data.players[n] = a;
+      saveAll(data);
+      // Clean URL
+      window.history.replaceState({}, '', window.location.pathname);
+      return n;
+    }
+  }catch(e){ console.log('Import failed:', e); }
+  return false;
+}
+
+// Generate all-predictions link (for host to share leaderboard state)
+function generateFullLink(){
+  const data = loadAll();
+  const payload = { players: data.players, results: data.results };
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  return window.location.origin + window.location.pathname + '?all=' + encoded;
+}
+
+function importFullFromURL(){
+  const params = new URLSearchParams(window.location.search);
+  const encoded = params.get('all');
+  if(!encoded) return false;
+  try{
+    const json = decodeURIComponent(escape(atob(encoded)));
+    const { players, results } = JSON.parse(json);
+    if(players){
+      const data = loadAll();
+      data.players = { ...data.players, ...players };
+      if(results) data.results = { ...data.results, ...results };
+      saveAll(data);
+      window.history.replaceState({}, '', window.location.pathname);
+      return true;
+    }
+  }catch(e){ console.log('Full import failed:', e); }
+  return false;
+}
 
 // ===== TAB SWITCHING =====
 function switchTab(tab){
@@ -559,9 +573,25 @@ function submitMine(){
       <div class="pitch-stripe"></div>
       <p style="font-size:0.9em;color:#99aabb">${myName}, you're in the game!</p>
       <div class="spacer"></div>
-      <button class="btn btn-primary" onclick="nextPlayer()">📱 Next Player's Turn →</button>
-      <p style="font-size:0.78em;color:#6b7d96;margin-top:10px">Pass the phone to the next person!</p>
+      <p style="font-size:0.82em;color:#ff9933;font-weight:700">📤 Send this link to the group host:</p>
+      <div style="background:rgba(255,153,51,0.06);border:1px solid rgba(255,153,51,0.2);border-radius:12px;padding:12px;margin:8px 0;word-break:break-all;font-size:0.7em;color:#99aabb;max-height:60px;overflow:hidden" id="my-share-link">${generateShareLink(myName, myAnswers)}</div>
+      <button class="btn btn-primary" onclick="copyMyLink()" style="margin-bottom:8px">📋 Copy My Prediction Link</button>
+      <button class="btn btn-secondary" onclick="shareMyLink()">📤 Share via WhatsApp</button>
+      <div class="spacer"></div>
+      <button class="btn btn-secondary" onclick="nextPlayer()" style="font-size:0.85em">📱 Or: Next Player on This Phone →</button>
     </div>`;
+}
+
+function copyMyLink(){
+  const link = generateShareLink(myName, myAnswers);
+  navigator.clipboard.writeText(link).then(()=>alert('Link copied! Send it to the group host 🏏')).catch(()=>{});
+}
+
+function shareMyLink(){
+  const link = generateShareLink(myName, myAnswers);
+  const text = `🏏 My T20 Final predictions are locked!\nOpen this to add my picks:\n${link}`;
+  if(navigator.share) navigator.share({text}).catch(()=>{});
+  else{ navigator.clipboard.writeText(text).then(()=>alert('Copied! Paste in WhatsApp 🏏')).catch(()=>{}); }
 }
 
 function nextPlayer(){
@@ -588,7 +618,14 @@ function renderStatus(){
 }
 
 function copyLink(){
-  navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied! 🏏')).catch(() => {});
+  navigator.clipboard.writeText(window.location.origin + window.location.pathname).then(() => alert('Link copied! 🏏')).catch(() => {});
+}
+
+function shareAllPredictions(){
+  const link = generateFullLink();
+  const text = `🏏 T20 WC Final Predictions — Open this to see everyone's picks & leaderboard:\n${link}`;
+  if(navigator.share) navigator.share({text}).catch(()=>{});
+  else navigator.clipboard.writeText(link).then(()=>alert('All predictions link copied! 🏏')).catch(()=>{});
 }
 
 // ===== LEADERBOARD =====
@@ -730,8 +767,7 @@ function resetToDefault(){
 function resetAllData(){
   if(!confirm('⚠️ Delete ALL predictions, results, and custom questions?'))return;
   if(!confirm('Cannot be undone! Really reset?'))return;
-  localStorage.removeItem(STORAGE_KEY); QUESTIONS=[...DEFAULT_QUESTIONS];
-  fetch(BLOB_URL, { method:'PUT', headers:{'Content-Type':'application/json'}, body:'{"players":{},"results":{}}' }).finally(()=>location.reload());
+  localStorage.removeItem(STORAGE_KEY); QUESTIONS=[...DEFAULT_QUESTIONS]; location.reload();
 }
 
 // ===== RESULTS ENTRY =====
@@ -818,12 +854,20 @@ function shareResults(){
 
 // Init
 loadAll();
+
+// Auto-import from URL if someone shared a prediction link
+const importedName = importFromURL();
+const importedFull = !importedName && importFullFromURL();
+if(importedName){
+  alert(`✅ ${importedName}'s predictions imported!`);
+  switchTab('status');
+} else if(importedFull){
+  alert('✅ All predictions imported!');
+  switchTab('leaderboard');
+}
+
 renderStatus();
 updateQuestionTypeOptions();
-
-// Pull cloud data on load and auto-refresh every 10 seconds
-pullFromCloud();
-setInterval(pullFromCloud, 10000);
 </script>
 </body>
 </html>
