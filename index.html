@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>🏏 T20 World Cup Final — Prediction Game</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: 'Poppins', sans-serif;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0a1628, #1a2a4a, #0d1f3c);
+    color: #fff;
+  }
+  .container { max-width: 540px; margin: 0 auto; padding: 16px; }
+  
+  /* Header */
+  .header {
+    text-align: center;
+    padding: 20px 0;
+    background: linear-gradient(135deg, rgba(255,153,0,0.15), rgba(0,100,200,0.15));
+    border-radius: 20px;
+    margin-bottom: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+  }
+  .header .emoji { font-size: 3em; }
+  .header h1 { font-size: 1.4em; font-weight: 800; margin: 8px 0 4px; }
+  .header .match { font-size: 1.1em; font-weight: 700; }
+  .header .ind { color: #ff9933; }
+  .header .vs { color: #888; margin: 0 8px; }
+  .header .nz { color: #000; text-shadow: 0 0 8px rgba(255,255,255,0.8); }
+  .header .details { font-size: 0.8em; color: #8899bb; margin-top: 6px; }
+  .flag { font-size: 1.3em; }
+
+  /* Screens */
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 20px;
+    margin-bottom: 14px;
+    backdrop-filter: blur(10px);
+  }
+
+  /* Buttons */
+  .btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 50px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  .btn:active { transform: scale(0.97); }
+  .btn-primary { background: linear-gradient(135deg, #ff9933, #ff6600); color: white; }
+  .btn-secondary { background: rgba(255,255,255,0.1); color: white; border: 1px solid rgba(255,255,255,0.2); }
+  .btn-india { background: linear-gradient(135deg, #ff9933, #e88020); color: white; }
+  .btn-nz { background: linear-gradient(135deg, #222, #444); color: white; }
+  .btn-option {
+    background: rgba(255,255,255,0.06);
+    color: white;
+    border: 2px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 14px 18px;
+    text-align: center;
+    font-size: 0.9em;
+    margin-bottom: 8px;
+  }
+  .btn-option.selected { background: rgba(255,153,51,0.25); border-color: #ff9933; }
+  .btn-option:hover { border-color: rgba(255,153,51,0.5); }
+
+  /* Input */
+  .name-input {
+    padding: 12px 18px;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 50px;
+    background: rgba(255,255,255,0.06);
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1em;
+    width: 100%;
+    outline: none;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .name-input::placeholder { color: rgba(255,255,255,0.3); }
+  .name-input:focus { border-color: #ff9933; }
+
+  .number-input {
+    padding: 12px 18px;
+    border: 2px solid rgba(255,255,255,0.15);
+    border-radius: 12px;
+    background: rgba(255,255,255,0.06);
+    color: white;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.2em;
+    width: 100%;
+    outline: none;
+    text-align: center;
+    -moz-appearance: textfield;
+  }
+  .number-input::-webkit-outer-spin-button,
+  .number-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+
+  /* Question */
+  .q-label { font-size: 0.85em; color: #8899bb; margin-bottom: 4px; }
+  .q-text { font-size: 1.1em; font-weight: 700; margin-bottom: 12px; }
+  .q-points { font-size: 0.75em; color: #ff9933; font-weight: 600; }
+  .options-row { display: flex; gap: 10px; }
+  .options-row .btn-option { flex: 1; }
+
+  /* Players list */
+  .player-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,153,51,0.15);
+    border: 1px solid rgba(255,153,51,0.3);
+    border-radius: 50px;
+    padding: 6px 14px;
+    margin: 4px;
+    font-size: 0.85em;
+  }
+  .player-chip .remove { cursor: pointer; opacity: 0.6; }
+  .player-chip .remove:hover { opacity: 1; }
+
+  /* Leaderboard */
+  .lb-row {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border-radius: 12px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .lb-row.gold { background: rgba(255,215,0,0.12); border-color: rgba(255,215,0,0.3); }
+  .lb-row.silver { background: rgba(192,192,192,0.08); border-color: rgba(192,192,192,0.2); }
+  .lb-row.bronze { background: rgba(205,127,50,0.08); border-color: rgba(205,127,50,0.2); }
+  .lb-rank { font-size: 1.5em; width: 40px; text-align: center; }
+  .lb-name { flex: 1; font-weight: 600; font-size: 1em; }
+  .lb-score { font-size: 1.4em; font-weight: 800; color: #ff9933; }
+  .lb-max { font-size: 0.75em; color: #666; }
+
+  /* Progress */
+  .progress-bar { width: 100%; height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-bottom: 16px; }
+  .progress-fill { height: 100%; background: linear-gradient(90deg, #ff9933, #ff6600); border-radius: 2px; transition: width 0.3s; }
+
+  .turn-banner {
+    text-align: center;
+    padding: 10px;
+    background: rgba(255,153,51,0.15);
+    border-radius: 12px;
+    margin-bottom: 14px;
+    font-weight: 600;
+  }
+
+  h2 { font-size: 1.2em; margin-bottom: 14px; }
+  .subtitle { color: #8899bb; font-size: 0.85em; margin-bottom: 14px; }
+  .spacer { height: 14px; }
+  .center { text-align: center; }
+
+  /* Share */
+  .share-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px dashed rgba(255,255,255,0.2);
+    border-radius: 12px;
+    padding: 16px;
+    font-size: 0.8em;
+    white-space: pre-line;
+    line-height: 1.6;
+    color: #ccd;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="header">
+    <div class="emoji">🏏🏆</div>
+    <h1>T20 World Cup Final</h1>
+    <div class="match">
+      <span class="flag">🇮🇳</span> <span class="ind">India</span>
+      <span class="vs">vs</span>
+      <span class="nz">New Zealand</span> <span class="flag">🇳🇿</span>
+    </div>
+    <div class="details">March 8, 2026 · Prediction Game</div>
+  </div>
+
+  <!-- SCREEN: SETUP -->
+  <div class="screen active" id="setup-screen">
+    <h2>👥 Add Players</h2>
+    <p class="subtitle">Add everyone who's watching. Each person will make their predictions.</p>
+    
+    <div style="display:flex;gap:8px;margin-bottom:14px;">
+      <input class="name-input" id="player-input" placeholder="Enter name..." style="text-align:left;border-radius:12px;margin-bottom:0;">
+      <button class="btn btn-primary" style="width:auto;padding:12px 20px;border-radius:12px;" onclick="addPlayer()">Add</button>
+    </div>
+    
+    <div id="players-list" class="card" style="min-height:60px;">
+      <div class="subtitle center" id="no-players">No players added yet</div>
+    </div>
+    
+    <div class="spacer"></div>
+    <button class="btn btn-primary" id="start-btn" onclick="startGame()" disabled>Start Predictions 🏏</button>
+  </div>
+
+  <!-- SCREEN: PREDICTIONS -->
+  <div class="screen" id="predict-screen">
+    <div class="turn-banner" id="turn-banner"></div>
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    
+    <div id="questions-container"></div>
+    
+    <div class="spacer"></div>
+    <button class="btn btn-primary" id="submit-btn" onclick="submitPredictions()">Lock In Predictions 🔒</button>
+  </div>
+
+  <!-- SCREEN: PASS DEVICE -->
+  <div class="screen" id="pass-screen">
+    <div class="card center" style="padding:40px 20px;">
+      <div style="font-size:3em;">📱</div>
+      <h2 id="pass-text" style="margin-top:12px;"></h2>
+      <p class="subtitle">Don't peek at their answers!</p>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="nextPlayer()">I'm Ready! 👀</button>
+    </div>
+  </div>
+
+  <!-- SCREEN: LEADERBOARD -->
+  <div class="screen" id="leaderboard-screen">
+    <h2 class="center">🏆 Prediction Leaderboard</h2>
+    <p class="subtitle center">Enter actual results after the match to see who wins!</p>
+    
+    <div id="leaderboard"></div>
+    
+    <div class="spacer"></div>
+    <button class="btn btn-secondary" onclick="showResults()" id="enter-results-btn">Enter Match Results ✏️</button>
+    <div class="spacer"></div>
+    <button class="btn btn-secondary" onclick="shareResults()">Share Results 📤</button>
+    <div class="spacer"></div>
+    <div class="share-box" id="share-box" style="display:none;"></div>
+  </div>
+
+  <!-- SCREEN: ENTER RESULTS -->
+  <div class="screen" id="results-screen">
+    <h2>📝 Enter Actual Results</h2>
+    <p class="subtitle">Fill in what actually happened in the match</p>
+    <div id="results-form"></div>
+    <div class="spacer"></div>
+    <button class="btn btn-primary" onclick="calculateScores()">Calculate Scores! 🏆</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    id: 'toss',
+    text: 'Who will win the toss?',
+    type: 'choice',
+    options: ['🇮🇳 India', '🇳🇿 New Zealand'],
+    points: 1
+  },
+  {
+    id: 'toss_decision',
+    text: 'What will the toss winner choose?',
+    type: 'choice',
+    options: ['Bat First', 'Bowl First'],
+    points: 1
+  },
+  {
+    id: 'first_innings',
+    text: 'First innings total score?',
+    type: 'number',
+    placeholder: 'e.g. 185',
+    points: 1,
+    scoring: 'range' // within 15 runs = full, within 30 = half
+  },
+  {
+    id: 'top_scorer',
+    text: 'Who will be the top scorer of the match?',
+    type: 'choice',
+    options: ['Rohit Sharma', 'Virat Kohli', 'Suryakumar Yadav', 'Hardik Pandya', 'Kane Williamson', 'Devon Conway', 'Glenn Phillips', 'Other'],
+    points: 1
+  },
+  {
+    id: 'most_wickets',
+    text: 'Who will take the most wickets?',
+    type: 'choice',
+    options: ['Jasprit Bumrah', 'Arshdeep Singh', 'Kuldeep Yadav', 'Trent Boult', 'Tim Southee', 'Ish Sodhi', 'Other'],
+    points: 1
+  },
+  {
+    id: 'winner',
+    text: 'Who will win the T20 World Cup? 🏆',
+    type: 'choice',
+    options: ['🇮🇳 India', '🇳🇿 New Zealand'],
+    points: 1
+  }
+];
+
+let players = [];
+let predictions = {};
+let currentPlayerIdx = 0;
+let actualResults = {};
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function addPlayer() {
+  const input = document.getElementById('player-input');
+  const name = input.value.trim();
+  if (!name || players.includes(name)) { input.value = ''; return; }
+  if (players.length >= 10) { alert('Max 10 players!'); return; }
+  
+  players.push(name);
+  predictions[name] = {};
+  input.value = '';
+  renderPlayers();
+}
+
+document.getElementById('player-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') addPlayer();
+});
+
+function removePlayer(name) {
+  players = players.filter(p => p !== name);
+  delete predictions[name];
+  renderPlayers();
+}
+
+function renderPlayers() {
+  const list = document.getElementById('players-list');
+  const noP = document.getElementById('no-players');
+  const btn = document.getElementById('start-btn');
+  
+  if (players.length === 0) {
+    list.innerHTML = '<div class="subtitle center" id="no-players">No players added yet</div>';
+    btn.disabled = true;
+    return;
+  }
+  
+  list.innerHTML = players.map(p => 
+    `<span class="player-chip">${p} <span class="remove" onclick="removePlayer('${p}')">✕</span></span>`
+  ).join('');
+  btn.disabled = players.length < 2;
+}
+
+function startGame() {
+  currentPlayerIdx = 0;
+  showScreen('pass-screen');
+  document.getElementById('pass-text').textContent = `Pass the phone to ${players[0]}`;
+}
+
+function nextPlayer() {
+  renderQuestions(players[currentPlayerIdx]);
+  showScreen('predict-screen');
+}
+
+function renderQuestions(playerName) {
+  document.getElementById('turn-banner').textContent = `🏏 ${playerName}'s Predictions`;
+  document.getElementById('progress').style.width = `${((currentPlayerIdx) / players.length) * 100}%`;
+  
+  const container = document.getElementById('questions-container');
+  container.innerHTML = '';
+  
+  QUESTIONS.forEach((q, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    let optionsHTML = '';
+    if (q.type === 'choice') {
+      if (q.options.length <= 3) {
+        optionsHTML = `<div class="options-row">${q.options.map(o => 
+          `<button class="btn btn-option" data-q="${q.id}" data-v="${o}" onclick="selectOption(this)">${o}</button>`
+        ).join('')}</div>`;
+      } else {
+        optionsHTML = q.options.map(o => 
+          `<button class="btn btn-option" data-q="${q.id}" data-v="${o}" onclick="selectOption(this)">${o}</button>`
+        ).join('');
+      }
+    } else if (q.type === 'number') {
+      optionsHTML = `<input type="number" class="number-input" data-q="${q.id}" placeholder="${q.placeholder}" onchange="selectNumber(this)">`;
+    }
+    
+    card.innerHTML = `
+      <div class="q-label">Q${idx + 1} of ${QUESTIONS.length} · <span class="q-points">${q.points} point${q.points > 1 ? 's' : ''}</span></div>
+      <div class="q-text">${q.text}</div>
+      ${optionsHTML}
+    `;
+    container.appendChild(card);
+  });
+}
+
+function selectOption(btn) {
+  const qId = btn.dataset.q;
+  const val = btn.dataset.v;
+  const playerName = players[currentPlayerIdx];
+  
+  // Deselect siblings
+  document.querySelectorAll(`[data-q="${qId}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  predictions[playerName][qId] = val;
+}
+
+function selectNumber(input) {
+  const qId = input.dataset.q;
+  const playerName = players[currentPlayerIdx];
+  predictions[playerName][qId] = parseInt(input.value);
+}
+
+function submitPredictions() {
+  const playerName = players[currentPlayerIdx];
+  const answered = Object.keys(predictions[playerName]).length;
+  if (answered < QUESTIONS.length) {
+    alert(`Please answer all ${QUESTIONS.length} questions! (${answered}/${QUESTIONS.length} done)`);
+    return;
+  }
+  
+  currentPlayerIdx++;
+  
+  if (currentPlayerIdx < players.length) {
+    document.getElementById('pass-text').textContent = `Pass the phone to ${players[currentPlayerIdx]}`;
+    showScreen('pass-screen');
+  } else {
+    renderLeaderboard();
+    showScreen('leaderboard-screen');
+  }
+}
+
+function renderLeaderboard() {
+  const lb = document.getElementById('leaderboard');
+  
+  // Calculate scores if results exist
+  let scored = Object.keys(actualResults).length > 0;
+  
+  let playerScores = players.map(p => {
+    let score = 0;
+    let max = 6;
+    if (scored) {
+      QUESTIONS.forEach(q => {
+        const pred = predictions[p][q.id];
+        const actual = actualResults[q.id];
+        if (!actual) return;
+        
+        if (q.type === 'number' && q.scoring === 'range') {
+          const diff = Math.abs(pred - actual);
+          if (diff <= 10) score += 1;
+          else if (diff <= 25) score += 0.5;
+        } else {
+          if (pred === actual) score += q.points;
+        }
+      });
+    }
+    return { name: p, score, max };
+  });
+  
+  if (scored) {
+    playerScores.sort((a, b) => b.score - a.score);
+  }
+  
+  const medals = ['🥇', '🥈', '🥉'];
+  const classes = ['gold', 'silver', 'bronze'];
+  
+  lb.innerHTML = playerScores.map((p, i) => {
+    const cls = scored && i < 3 ? classes[i] : '';
+    const rank = scored ? (medals[i] || `#${i+1}`) : '🏏';
+    return `<div class="lb-row ${cls}">
+      <div class="lb-rank">${rank}</div>
+      <div class="lb-name">${p.name}</div>
+      <div class="lb-score">${scored ? p.score : '?'}<span class="lb-max">/${p.max}</span></div>
+    </div>`;
+  }).join('');
+}
+
+function showResults() {
+  const form = document.getElementById('results-form');
+  form.innerHTML = '';
+  
+  QUESTIONS.forEach(q => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    
+    let inputHTML = '';
+    if (q.type === 'choice') {
+      inputHTML = q.options.map(o => 
+        `<button class="btn btn-option" data-rq="${q.id}" data-rv="${o}" onclick="selectResult(this)">${o}</button>`
+      ).join('');
+    } else if (q.type === 'number') {
+      inputHTML = `<input type="number" class="number-input" data-rq="${q.id}" placeholder="${q.placeholder}" onchange="setResult(this)">`;
+    }
+    
+    card.innerHTML = `<div class="q-text">${q.text}</div>${inputHTML}`;
+    form.appendChild(card);
+  });
+  
+  showScreen('results-screen');
+}
+
+function selectResult(btn) {
+  const qId = btn.dataset.rq;
+  document.querySelectorAll(`[data-rq="${qId}"]`).forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  actualResults[qId] = btn.dataset.rv;
+}
+
+function setResult(input) {
+  actualResults[input.dataset.rq] = parseInt(input.value);
+}
+
+function calculateScores() {
+  if (Object.keys(actualResults).length < QUESTIONS.length) {
+    alert('Please fill in all results!');
+    return;
+  }
+  renderLeaderboard();
+  showScreen('leaderboard-screen');
+  document.getElementById('enter-results-btn').textContent = 'Edit Results ✏️';
+}
+
+function shareResults() {
+  const scored = Object.keys(actualResults).length > 0;
+  let text = '🏏🏆 T20 WORLD CUP FINAL\n🇮🇳 India vs New Zealand 🇳🇿\nPrediction Game Results\n\n';
+  
+  if (scored) {
+    let playerScores = players.map(p => {
+      let score = 0;
+      QUESTIONS.forEach(q => {
+        const pred = predictions[p][q.id];
+        const actual = actualResults[q.id];
+        if (!actual) return;
+        if (q.type === 'number' && q.scoring === 'range') {
+          const diff = Math.abs(pred - actual);
+          if (diff <= 10) score += 1;
+          else if (diff <= 25) score += 0.5;
+        } else {
+          if (pred === actual) score += q.points;
+        }
+      });
+      return { name: p, score };
+    }).sort((a, b) => b.score - a.score);
+    
+    const medals = ['🥇', '🥈', '🥉'];
+    playerScores.forEach((p, i) => {
+      text += `${medals[i] || '  '} ${p.name}: ${p.score}/6 pts\n`;
+    });
+  } else {
+    text += 'Predictions locked! 🔒\n\n';
+    players.forEach(p => {
+      text += `🏏 ${p}: predictions submitted ✅\n`;
+    });
+    text += '\nResults coming after the match! 🏆';
+  }
+  
+  const box = document.getElementById('share-box');
+  box.style.display = 'block';
+  box.textContent = text;
+  
+  if (navigator.share) {
+    navigator.share({ text }).catch(() => {});
+  } else if (navigator.clipboard) {
+    navigator.clipboard.writeText(text).then(() => alert('Copied to clipboard!'));
+  }
+}
+</script>
+</body>
+</html>
