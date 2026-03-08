@@ -21,12 +21,14 @@
   .btn:active{transform:scale(0.97)}
   .btn-primary{background:linear-gradient(135deg,#ff9933,#ff6600);color:white;box-shadow:0 4px 15px rgba(255,153,51,0.3)}
   .btn-secondary{background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2)}
+  .btn-danger{background:rgba(244,67,54,0.2);color:#f44336;border:1px solid rgba(244,67,54,0.3)}
+  .btn-small{padding:6px 12px;font-size:0.8em;width:auto;margin:2px}
   .btn-option{background:rgba(255,255,255,0.06);color:white;border:2px solid rgba(255,255,255,0.12);border-radius:12px;padding:13px 16px;text-align:center;font-size:0.9em;margin-bottom:8px}
   .btn-option.selected{background:rgba(255,153,51,0.25);border-color:#ff9933}
   .options-row{display:flex;gap:8px}.options-row .btn-option{flex:1}
-  .name-input,.number-input{padding:12px 16px;border:2px solid rgba(255,255,255,0.15);border-radius:12px;background:rgba(255,255,255,0.06);color:white;font-family:'Poppins',sans-serif;font-size:1em;width:100%;outline:none;text-align:center}
-  .name-input::placeholder,.number-input::placeholder{color:rgba(255,255,255,0.3)}
-  .name-input:focus,.number-input:focus{border-color:#ff9933}
+  .name-input,.number-input,.text-input{padding:12px 16px;border:2px solid rgba(255,255,255,0.15);border-radius:12px;background:rgba(255,255,255,0.06);color:white;font-family:'Poppins',sans-serif;font-size:1em;width:100%;outline:none;text-align:center}
+  .name-input::placeholder,.number-input::placeholder,.text-input::placeholder{color:rgba(255,255,255,0.3)}
+  .name-input:focus,.number-input:focus,.text-input:focus{border-color:#ff9933}
   .number-input{-moz-appearance:textfield}
   .number-input::-webkit-outer-spin-button,.number-input::-webkit-inner-spin-button{-webkit-appearance:none}
   .q-label{font-size:0.8em;color:#8899bb;margin-bottom:4px}
@@ -36,6 +38,15 @@
   h2{font-size:1.15em;margin-bottom:12px}
   .subtitle{color:#8899bb;font-size:0.82em;margin-bottom:12px}
   .center{text-align:center}
+  .form-row{display:flex;gap:8px;margin-bottom:8px}
+  .form-row > *{flex:1}
+  .select-input{padding:10px 14px;border:2px solid rgba(255,255,255,0.15);border-radius:12px;background:rgba(255,255,255,0.06);color:white;font-family:'Poppins',sans-serif;font-size:0.9em;width:100%;outline:none}
+  .select-input:focus{border-color:#ff9933}
+  .admin-question{border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;margin-bottom:10px;background:rgba(255,255,255,0.02)}
+  .admin-question-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+  .admin-question-text{font-weight:600;font-size:0.95em}
+  .admin-question-details{font-size:0.8em;color:#8899bb}
+  .admin-controls{display:flex;gap:6px}
 
   /* Status chips */
   .status-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
@@ -58,6 +69,10 @@
   .tab-bar{display:flex;gap:6px;margin-bottom:16px}
   .tab{flex:1;padding:10px;border-radius:12px;text-align:center;font-size:0.82em;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)}
   .tab.active{background:rgba(255,153,51,0.2);border-color:#ff9933;color:#ff9933}
+
+  .add-option-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
+  .add-option-row input{flex:1;padding:8px 12px;font-size:0.85em}
+  .remove-option{background:rgba(244,67,54,0.2);color:#f44336;border:1px solid rgba(244,67,54,0.3);border-radius:6px;padding:6px 10px;font-size:0.75em;cursor:pointer}
 </style>
 </head>
 <body>
@@ -78,6 +93,7 @@
     <div class="tab active" onclick="switchTab('predict')">🏏 Predict</div>
     <div class="tab" onclick="switchTab('status')">👥 Status</div>
     <div class="tab" onclick="switchTab('leaderboard')">🏆 Board</div>
+    <div class="tab" onclick="switchTab('admin')">⚙️</div>
   </div>
 
   <!-- PREDICT TAB -->
@@ -116,36 +132,127 @@
     <div class="spacer"></div>
     <div class="share-box" id="share-box" style="display:none"></div>
   </div>
+
+  <!-- ADMIN TAB -->
+  <div class="screen" id="admin-tab">
+    <h2>⚙️ Admin Settings</h2>
+    <p class="subtitle">Manage questions and reset data</p>
+    
+    <div class="card">
+      <h3 style="margin-bottom:12px">Current Questions (<span id="total-points">6</span> points total)</h3>
+      <div id="questions-list"></div>
+      <div class="spacer"></div>
+      <button class="btn btn-secondary" onclick="showAddQuestion()">+ Add New Question</button>
+    </div>
+
+    <div class="card" id="add-question-form" style="display:none">
+      <h3 style="margin-bottom:12px">Add New Question</h3>
+      <div style="margin-bottom:8px">
+        <input class="text-input" id="new-question-text" placeholder="Question text..." style="text-align:left">
+      </div>
+      <div class="form-row">
+        <select class="select-input" id="new-question-type" onchange="updateQuestionTypeOptions()">
+          <option value="choice">Multiple Choice</option>
+          <option value="number">Number Input</option>
+        </select>
+        <input class="number-input" id="new-question-points" placeholder="Points" min="0" max="10" step="0.5">
+      </div>
+      <div id="new-question-options" style="margin-bottom:8px">
+        <div style="font-size:0.85em;color:#8899bb;margin-bottom:6px">Answer Options:</div>
+        <div id="options-list">
+          <div class="add-option-row">
+            <input class="text-input" placeholder="Option 1..." style="text-align:left">
+            <button class="remove-option" onclick="removeOption(this)">×</button>
+          </div>
+          <div class="add-option-row">
+            <input class="text-input" placeholder="Option 2..." style="text-align:left">
+            <button class="remove-option" onclick="removeOption(this)">×</button>
+          </div>
+        </div>
+        <button class="btn btn-small" onclick="addOption()">+ Add Option</button>
+      </div>
+      <div class="form-row">
+        <button class="btn btn-secondary" onclick="cancelAddQuestion()">Cancel</button>
+        <button class="btn btn-primary" onclick="saveNewQuestion()">Save Question</button>
+      </div>
+    </div>
+
+    <div class="card">
+      <h3 style="margin-bottom:12px">Reset Options</h3>
+      <div style="margin-bottom:8px">
+        <button class="btn btn-secondary" onclick="resetToDefault()">Reset Questions to Default</button>
+      </div>
+      <button class="btn btn-danger" onclick="resetAllData()">⚠️ Reset All Data</button>
+    </div>
+  </div>
 </div>
 
 <script>
-// ===== DATA =====
-const QUESTIONS = [
-  { id:'winner', text:'🏆 Who will WIN the World Cup?', type:'choice', options:['🇮🇳 India','🇳🇿 New Zealand'], points:2 },
+// ===== DEFAULT QUESTIONS =====
+const DEFAULT_QUESTIONS = [
+  { id:'winner', text:'🏆 Who will WIN the World Cup?', type:'choice', options:['🇮🇳 India','🇳🇿 New Zealand'], points:3 },
   { id:'toss', text:'🪙 Who will win the toss?', type:'choice', options:['🇮🇳 India','🇳🇿 New Zealand'], points:1 },
   { id:'toss_decision', text:'🏏 What will toss winner choose?', type:'choice', options:['Bat First','Bowl First'], points:1 },
-  { id:'first_innings', text:'📊 First innings total?', type:'number', placeholder:'e.g. 185', points:1, scoring:'range' },
-  { id:'top_scorer', text:'⭐ Top scorer of the match?', type:'choice', options:['Suryakumar Yadav','Abhishek Sharma','Tilak Varma','Rinku Singh','Sanju Samson','Hardik Pandya','Devon Conway','Rachin Ravindra','Glenn Phillips','Kane Williamson','Daryl Mitchell','Other'], points:1 },
-  { id:'most_wickets', text:'🎯 Best bowler (most wickets)?', type:'choice', options:['Jasprit Bumrah','Arshdeep Singh','Varun Chakaravarthy','Hardik Pandya','Axar Patel','Trent Boult','Matt Henry','Mitchell Santner','Lockie Ferguson','Other'], points:1 }
+  { id:'first_innings', text:'📊 First innings total?', type:'number', placeholder:'e.g. 185', points:2, scoring:'range' },
+  { id:'top_scorer', text:'⭐ Top scorer of the match?', type:'choice', options:['Suryakumar Yadav','Abhishek Sharma','Tilak Varma','Rinku Singh','Sanju Samson','Ishan Kishan','Shubman Gill','Finn Allen','Tim Seifert','Daryl Mitchell','Glenn Phillips','Rachin Ravindra','Kane Williamson','Other'], points:2 },
+  { id:'most_wickets', text:'🎯 Best bowler (most wickets)?', type:'choice', options:['Jasprit Bumrah','Arshdeep Singh','Varun Chakaravarthy','Hardik Pandya','Axar Patel','Matt Henry','Trent Boult','Mitchell Santner','Lockie Ferguson','Other'], points:1 }
 ];
-const MAX_POINTS = QUESTIONS.reduce((s,q) => s + q.points, 0); // 7
+
+// ===== DATA =====
+let QUESTIONS = [...DEFAULT_QUESTIONS];
+
+function getMaxPoints() {
+  return QUESTIONS.reduce((s,q) => s + q.points, 0);
+}
 
 // ===== STORAGE (localStorage-based, keyed by URL hash for shared state) =====
-const STORAGE_KEY = 'cricket_predictions_v2';
+const STORAGE_KEY = 'cricket_predictions_v3';
 
 function loadAll() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { players: {}, results: {} }; }
-  catch { return { players: {}, results: {} }; }
+  try { 
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { players: {}, results: {}, questions: null };
+    if (data.questions) {
+      QUESTIONS = data.questions;
+    }
+    return data;
+  }
+  catch { return { players: {}, results: {}, questions: null }; }
 }
-function saveAll(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+function saveAll(data) { 
+  data.questions = QUESTIONS;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
+}
+
+function saveQuestions() {
+  const data = loadAll();
+  saveAll(data);
+  updateTotalPoints();
+}
 
 // ===== TAB SWITCHING =====
 function switchTab(tab) {
   document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  if (tab === 'predict') { document.querySelectorAll('.tab')[0].classList.add('active'); document.getElementById('predict-tab').classList.add('active'); }
-  if (tab === 'status') { document.querySelectorAll('.tab')[1].classList.add('active'); document.getElementById('status-tab').classList.add('active'); renderStatus(); }
-  if (tab === 'leaderboard') { document.querySelectorAll('.tab')[2].classList.add('active'); document.getElementById('leaderboard-tab').classList.add('active'); renderLeaderboard(); }
+  if (tab === 'predict') { 
+    document.querySelectorAll('.tab')[0].classList.add('active'); 
+    document.getElementById('predict-tab').classList.add('active'); 
+  }
+  if (tab === 'status') { 
+    document.querySelectorAll('.tab')[1].classList.add('active'); 
+    document.getElementById('status-tab').classList.add('active'); 
+    renderStatus(); 
+  }
+  if (tab === 'leaderboard') { 
+    document.querySelectorAll('.tab')[2].classList.add('active'); 
+    document.getElementById('leaderboard-tab').classList.add('active'); 
+    renderLeaderboard(); 
+  }
+  if (tab === 'admin') { 
+    document.querySelectorAll('.tab')[3].classList.add('active'); 
+    document.getElementById('admin-tab').classList.add('active'); 
+    renderAdmin(); 
+  }
 }
 
 // ===== PREDICT =====
@@ -284,6 +391,7 @@ function renderLeaderboard() {
   
   const medals = ['🥇','🥈','🥉'];
   const classes = ['gold','silver','bronze'];
+  const maxPoints = getMaxPoints();
   
   lb.innerHTML = scores.map((p,i) => {
     const cls = hasResults && i < 3 ? classes[i] : '';
@@ -291,13 +399,181 @@ function renderLeaderboard() {
     return `<div class="lb-row ${cls}">
       <div class="lb-rank">${rank}</div>
       <div class="lb-name">${p.name}</div>
-      <div class="lb-score">${hasResults ? p.score : '?'}<span class="lb-max">/${MAX_POINTS}</span></div>
+      <div class="lb-score">${hasResults ? p.score : '?'}<span class="lb-max">/${maxPoints}</span></div>
     </div>`;
   }).join('');
   
   document.getElementById('lb-subtitle').textContent = hasResults 
     ? '🏆 Final Scores!' 
     : `${names.length} prediction${names.length>1?'s':''} locked. Enter results after the match!`;
+}
+
+// ===== ADMIN =====
+function renderAdmin() {
+  const list = document.getElementById('questions-list');
+  list.innerHTML = '';
+  
+  QUESTIONS.forEach((q, index) => {
+    const div = document.createElement('div');
+    div.className = 'admin-question';
+    
+    const optionsText = q.type === 'choice' ? `Options: ${q.options.join(', ')}` : `Type: Number input`;
+    
+    div.innerHTML = `
+      <div class="admin-question-header">
+        <div>
+          <div class="admin-question-text">${q.text}</div>
+          <div class="admin-question-details">${optionsText} • ${q.points} points</div>
+        </div>
+        <div class="admin-controls">
+          ${index > 0 ? `<button class="btn btn-small" onclick="moveQuestion(${index}, -1)">↑</button>` : ''}
+          ${index < QUESTIONS.length - 1 ? `<button class="btn btn-small" onclick="moveQuestion(${index}, 1)">↓</button>` : ''}
+          <button class="btn btn-small btn-danger" onclick="deleteQuestion(${index})">Delete</button>
+        </div>
+      </div>
+    `;
+    list.appendChild(div);
+  });
+  
+  updateTotalPoints();
+}
+
+function updateTotalPoints() {
+  const total = getMaxPoints();
+  const elem = document.getElementById('total-points');
+  if (elem) elem.textContent = total;
+}
+
+function moveQuestion(index, direction) {
+  const newIndex = index + direction;
+  if (newIndex < 0 || newIndex >= QUESTIONS.length) return;
+  
+  [QUESTIONS[index], QUESTIONS[newIndex]] = [QUESTIONS[newIndex], QUESTIONS[index]];
+  saveQuestions();
+  renderAdmin();
+}
+
+function deleteQuestion(index) {
+  if (!confirm(`Delete question: "${QUESTIONS[index].text}"?`)) return;
+  QUESTIONS.splice(index, 1);
+  saveQuestions();
+  renderAdmin();
+}
+
+function showAddQuestion() {
+  document.getElementById('add-question-form').style.display = 'block';
+  document.getElementById('new-question-text').focus();
+}
+
+function cancelAddQuestion() {
+  document.getElementById('add-question-form').style.display = 'none';
+  clearAddQuestionForm();
+}
+
+function clearAddQuestionForm() {
+  document.getElementById('new-question-text').value = '';
+  document.getElementById('new-question-type').value = 'choice';
+  document.getElementById('new-question-points').value = '';
+  
+  const optionsList = document.getElementById('options-list');
+  optionsList.innerHTML = `
+    <div class="add-option-row">
+      <input class="text-input" placeholder="Option 1..." style="text-align:left">
+      <button class="remove-option" onclick="removeOption(this)">×</button>
+    </div>
+    <div class="add-option-row">
+      <input class="text-input" placeholder="Option 2..." style="text-align:left">
+      <button class="remove-option" onclick="removeOption(this)">×</button>
+    </div>
+  `;
+  updateQuestionTypeOptions();
+}
+
+function updateQuestionTypeOptions() {
+  const type = document.getElementById('new-question-type').value;
+  const optionsDiv = document.getElementById('new-question-options');
+  optionsDiv.style.display = type === 'choice' ? 'block' : 'none';
+}
+
+function addOption() {
+  const optionsList = document.getElementById('options-list');
+  const newRow = document.createElement('div');
+  newRow.className = 'add-option-row';
+  newRow.innerHTML = `
+    <input class="text-input" placeholder="New option..." style="text-align:left">
+    <button class="remove-option" onclick="removeOption(this)">×</button>
+  `;
+  optionsList.appendChild(newRow);
+}
+
+function removeOption(btn) {
+  const optionsList = document.getElementById('options-list');
+  if (optionsList.children.length <= 2) {
+    alert('Must have at least 2 options!');
+    return;
+  }
+  btn.parentElement.remove();
+}
+
+function saveNewQuestion() {
+  const text = document.getElementById('new-question-text').value.trim();
+  const type = document.getElementById('new-question-type').value;
+  const points = parseFloat(document.getElementById('new-question-points').value);
+  
+  if (!text) {
+    alert('Enter question text!');
+    return;
+  }
+  
+  if (!points || points <= 0) {
+    alert('Enter valid points (greater than 0)!');
+    return;
+  }
+  
+  const newQuestion = {
+    id: 'custom_' + Date.now(),
+    text: text,
+    type: type,
+    points: points
+  };
+  
+  if (type === 'choice') {
+    const optionInputs = document.querySelectorAll('#options-list input');
+    const options = Array.from(optionInputs)
+      .map(input => input.value.trim())
+      .filter(option => option);
+    
+    if (options.length < 2) {
+      alert('Add at least 2 options!');
+      return;
+    }
+    
+    newQuestion.options = options;
+  } else {
+    newQuestion.placeholder = 'Enter number...';
+    newQuestion.scoring = 'exact';
+  }
+  
+  QUESTIONS.push(newQuestion);
+  saveQuestions();
+  renderAdmin();
+  cancelAddQuestion();
+}
+
+function resetToDefault() {
+  if (!confirm('Reset all questions to default? This will remove any custom questions you added.')) return;
+  QUESTIONS = [...DEFAULT_QUESTIONS];
+  saveQuestions();
+  renderAdmin();
+}
+
+function resetAllData() {
+  if (!confirm('⚠️ This will delete ALL predictions, results, and custom questions. Are you sure?')) return;
+  if (!confirm('This cannot be undone! Really reset everything?')) return;
+  
+  localStorage.removeItem(STORAGE_KEY);
+  QUESTIONS = [...DEFAULT_QUESTIONS];
+  location.reload();
 }
 
 // ===== RESULTS ENTRY =====
@@ -382,7 +658,8 @@ function shareResults() {
     
     text += '🏆 FINAL SCORES:\n';
     const medals = ['🥇','🥈','🥉'];
-    scores.forEach((p,i) => { text += `${medals[i]||'  '} ${p.name}: ${p.score}/${MAX_POINTS}\n`; });
+    const maxPoints = getMaxPoints();
+    scores.forEach((p,i) => { text += `${medals[i]||'  '} ${p.name}: ${p.score}/${maxPoints}\n`; });
   } else {
     text += `${names.length} predictions locked! 🔒\n`;
     names.forEach(n => { text += `✅ ${n}\n`; });
@@ -401,7 +678,9 @@ function shareResults() {
 }
 
 // Init
+loadAll(); // Load saved questions if any
 renderStatus();
+updateQuestionTypeOptions();
 </script>
 </body>
 </html>
