@@ -5,88 +5,280 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>🏏 T20 WC Final Predictions</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700;800;900&display=swap');
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Poppins',sans-serif;min-height:100vh;background:linear-gradient(135deg,#0a1628,#1a2a4a,#0d1f3c);color:#fff}
-  .container{max-width:520px;margin:0 auto;padding:16px}
-  .header{text-align:center;padding:20px 16px;background:linear-gradient(135deg,rgba(255,153,0,0.15),rgba(0,100,200,0.15));border-radius:20px;margin-bottom:16px;border:1px solid rgba(255,255,255,0.1)}
-  .header .emoji{font-size:2.5em}
-  .header h1{font-size:1.3em;font-weight:800;margin:6px 0 2px}
-  .header .match{font-size:1.05em;font-weight:700}
-  .ind{color:#ff9933}.vs{color:#666;margin:0 6px}.nz{color:#fff}
-  .header .details{font-size:0.75em;color:#8899bb;margin-top:4px}
+
+  body{
+    font-family:'Poppins',sans-serif;
+    min-height:100vh;
+    background:#0a1628;
+    color:#fff;
+    overflow-x:hidden;
+  }
+
+  /* Animated cricket stadium background */
+  body::before{
+    content:'';position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;
+    background:
+      radial-gradient(ellipse 120% 60% at 50% 110%, rgba(34,139,34,0.25) 0%, transparent 70%),
+      radial-gradient(circle at 20% 20%, rgba(255,153,51,0.08) 0%, transparent 50%),
+      radial-gradient(circle at 80% 30%, rgba(0,100,200,0.08) 0%, transparent 50%),
+      linear-gradient(180deg, #070d1a 0%, #0d1f3c 40%, #132a1e 100%);
+  }
+
+  /* Floating cricket balls animation */
+  .floating-balls{position:fixed;top:0;left:0;right:0;bottom:0;z-index:0;pointer-events:none;overflow:hidden}
+  .ball{position:absolute;font-size:1.2em;opacity:0.08;animation:floatUp linear infinite}
+  @keyframes floatUp{
+    0%{transform:translateY(110vh) rotate(0deg);opacity:0}
+    10%{opacity:0.08}
+    90%{opacity:0.08}
+    100%{transform:translateY(-10vh) rotate(720deg);opacity:0}
+  }
+
+  .container{max-width:520px;margin:0 auto;padding:16px;position:relative;z-index:1}
+
+  /* Stadium-style header */
+  .header{
+    text-align:center;padding:28px 20px 24px;
+    background:linear-gradient(135deg, rgba(255,153,0,0.12), rgba(0,50,120,0.15));
+    border-radius:24px;margin-bottom:20px;
+    border:1px solid rgba(255,255,255,0.08);
+    position:relative;overflow:hidden;
+  }
+  .header::before{
+    content:'';position:absolute;top:0;left:0;right:0;height:4px;
+    background:linear-gradient(90deg, #ff9933, #ffffff, #138808);
+  }
+  .header::after{
+    content:'';position:absolute;bottom:0;left:0;right:0;height:3px;
+    background:linear-gradient(90deg, #000000, #ffffff, #cc0000);
+  }
+
+  .match-badge{
+    display:inline-block;padding:4px 14px;border-radius:20px;font-size:0.65em;
+    background:rgba(255,153,51,0.2);border:1px solid rgba(255,153,51,0.4);
+    color:#ff9933;font-weight:700;letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;
+  }
+  .header h1{font-size:1.6em;font-weight:900;margin:6px 0 8px;letter-spacing:-0.5px}
+  .header h1 span{background:linear-gradient(135deg,#ff9933,#ffcc00);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+
+  .teams-row{display:flex;align-items:center;justify-content:center;gap:12px;margin:12px 0}
+  .team-block{text-align:center}
+  .team-flag{font-size:2.2em;display:block;margin-bottom:4px;filter:drop-shadow(0 2px 8px rgba(0,0,0,0.3))}
+  .team-name{font-weight:800;font-size:0.95em;letter-spacing:1px}
+  .team-india{color:#ff9933}
+  .team-nz{color:#fff}
+  .vs-badge{
+    font-size:0.75em;font-weight:800;color:#556;
+    background:rgba(255,255,255,0.06);padding:6px 12px;border-radius:50%;
+    border:1px solid rgba(255,255,255,0.1);
+  }
+
+  .venue-info{font-size:0.72em;color:#7a8da8;margin-top:8px;line-height:1.5}
+  .venue-info strong{color:#99aabb}
+
+  /* Pitch stripe decoration */
+  .pitch-stripe{
+    width:100%;height:6px;margin:16px 0;border-radius:3px;
+    background:repeating-linear-gradient(90deg, rgba(34,139,34,0.3) 0px, rgba(34,139,34,0.3) 20px, rgba(34,139,34,0.15) 20px, rgba(34,139,34,0.15) 40px);
+  }
+
   .screen{display:none}.screen.active{display:block}
-  .card{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:16px;padding:18px;margin-bottom:12px;backdrop-filter:blur(10px)}
-  .btn{padding:12px 24px;border:none;border-radius:50px;font-family:'Poppins',sans-serif;font-size:0.95em;font-weight:600;cursor:pointer;transition:all 0.2s;width:100%}
+
+  .card{
+    background:rgba(255,255,255,0.05);
+    border:1px solid rgba(255,255,255,0.08);
+    border-radius:20px;padding:20px;margin-bottom:14px;
+    backdrop-filter:blur(10px);
+    transition:transform 0.2s;
+  }
+  .card:hover{transform:translateY(-1px)}
+
+  .btn{
+    padding:14px 24px;border:none;border-radius:50px;
+    font-family:'Poppins',sans-serif;font-size:0.95em;font-weight:700;
+    cursor:pointer;transition:all 0.2s;width:100%;
+    position:relative;overflow:hidden;
+  }
   .btn:active{transform:scale(0.97)}
-  .btn-primary{background:linear-gradient(135deg,#ff9933,#ff6600);color:white;box-shadow:0 4px 15px rgba(255,153,51,0.3)}
-  .btn-secondary{background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2)}
-  .btn-danger{background:rgba(244,67,54,0.2);color:#f44336;border:1px solid rgba(244,67,54,0.3)}
+  .btn-primary{
+    background:linear-gradient(135deg,#ff9933,#ff6600);color:white;
+    box-shadow:0 4px 20px rgba(255,153,51,0.4);
+    text-shadow:0 1px 2px rgba(0,0,0,0.2);
+  }
+  .btn-primary:hover{box-shadow:0 6px 25px rgba(255,153,51,0.5)}
+  .btn-secondary{background:rgba(255,255,255,0.08);color:white;border:1px solid rgba(255,255,255,0.15)}
+  .btn-danger{background:rgba(244,67,54,0.15);color:#f44336;border:1px solid rgba(244,67,54,0.25)}
   .btn-small{padding:6px 12px;font-size:0.8em;width:auto;margin:2px}
-  .btn-option{background:rgba(255,255,255,0.06);color:white;border:2px solid rgba(255,255,255,0.12);border-radius:12px;padding:13px 16px;text-align:center;font-size:0.9em;margin-bottom:8px}
-  .btn-option.selected{background:rgba(255,153,51,0.25);border-color:#ff9933}
+
+  .btn-option{
+    background:rgba(255,255,255,0.04);color:white;
+    border:2px solid rgba(255,255,255,0.1);border-radius:14px;
+    padding:14px 16px;text-align:center;font-size:0.88em;margin-bottom:8px;
+    font-weight:600;transition:all 0.2s;
+  }
+  .btn-option:hover{background:rgba(255,255,255,0.08);border-color:rgba(255,255,255,0.2)}
+  .btn-option.selected{
+    background:linear-gradient(135deg,rgba(255,153,51,0.2),rgba(255,102,0,0.15));
+    border-color:#ff9933;color:#ffcc66;
+    box-shadow:0 0 15px rgba(255,153,51,0.15);
+  }
   .options-row{display:flex;gap:8px}.options-row .btn-option{flex:1}
-  .name-input,.number-input,.text-input{padding:12px 16px;border:2px solid rgba(255,255,255,0.15);border-radius:12px;background:rgba(255,255,255,0.06);color:white;font-family:'Poppins',sans-serif;font-size:1em;width:100%;outline:none;text-align:center}
-  .name-input::placeholder,.number-input::placeholder,.text-input::placeholder{color:rgba(255,255,255,0.3)}
-  .name-input:focus,.number-input:focus,.text-input:focus{border-color:#ff9933}
+
+  .name-input,.number-input,.text-input{
+    padding:14px 18px;
+    border:2px solid rgba(255,255,255,0.12);border-radius:14px;
+    background:rgba(255,255,255,0.04);color:white;
+    font-family:'Poppins',sans-serif;font-size:1em;width:100%;outline:none;text-align:center;
+    transition:all 0.2s;
+  }
+  .name-input::placeholder,.number-input::placeholder,.text-input::placeholder{color:rgba(255,255,255,0.25)}
+  .name-input:focus,.number-input:focus,.text-input:focus{border-color:#ff9933;background:rgba(255,153,51,0.05)}
   .number-input{-moz-appearance:textfield}
   .number-input::-webkit-outer-spin-button,.number-input::-webkit-inner-spin-button{-webkit-appearance:none}
-  .q-label{font-size:0.8em;color:#8899bb;margin-bottom:4px}
-  .q-text{font-size:1.05em;font-weight:700;margin-bottom:10px}
-  .q-points{color:#ff9933;font-weight:600}
-  .spacer{height:12px}
-  h2{font-size:1.15em;margin-bottom:12px}
-  .subtitle{color:#8899bb;font-size:0.82em;margin-bottom:12px}
+
+  .q-label{font-size:0.78em;color:#6b7d96;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+  .q-text{font-size:1.08em;font-weight:700;margin-bottom:12px;line-height:1.3}
+  .q-points{
+    color:#ff9933;font-weight:700;font-size:0.85em;
+    background:rgba(255,153,51,0.12);padding:2px 8px;border-radius:8px;
+  }
+  .spacer{height:14px}
+  h2{font-size:1.2em;margin-bottom:12px;font-weight:800}
+  .subtitle{color:#7a8da8;font-size:0.82em;margin-bottom:14px}
   .center{text-align:center}
+
   .form-row{display:flex;gap:8px;margin-bottom:8px}
   .form-row > *{flex:1}
-  .select-input{padding:10px 14px;border:2px solid rgba(255,255,255,0.15);border-radius:12px;background:rgba(255,255,255,0.06);color:white;font-family:'Poppins',sans-serif;font-size:0.9em;width:100%;outline:none}
+  .select-input{padding:10px 14px;border:2px solid rgba(255,255,255,0.12);border-radius:12px;background:rgba(255,255,255,0.04);color:white;font-family:'Poppins',sans-serif;font-size:0.9em;width:100%;outline:none}
   .select-input:focus{border-color:#ff9933}
-  .admin-question{border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:14px;margin-bottom:10px;background:rgba(255,255,255,0.02)}
+  .select-input option{background:#1a2a4a;color:white}
+
+  .admin-question{border:1px solid rgba(255,255,255,0.08);border-radius:14px;padding:14px;margin-bottom:10px;background:rgba(255,255,255,0.02)}
   .admin-question-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-  .admin-question-text{font-weight:600;font-size:0.95em}
-  .admin-question-details{font-size:0.8em;color:#8899bb}
-  .admin-controls{display:flex;gap:6px}
+  .admin-question-text{font-weight:700;font-size:0.92em}
+  .admin-question-details{font-size:0.78em;color:#6b7d96}
+  .admin-controls{display:flex;gap:4px}
 
   /* Status chips */
   .status-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
-  .status-chip{display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:50px;font-size:0.82em;font-weight:600;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04)}
-  .status-chip.done{background:rgba(76,175,80,0.15);border-color:rgba(76,175,80,0.3);color:#81c784}
-  .status-chip.pending{background:rgba(255,152,0,0.1);border-color:rgba(255,152,0,0.2);color:#ffb74d}
+  .status-chip{
+    display:flex;align-items:center;gap:6px;padding:10px 16px;
+    border-radius:50px;font-size:0.82em;font-weight:600;
+    border:1px solid rgba(76,175,80,0.25);background:rgba(76,175,80,0.1);color:#81c784;
+  }
 
   /* Leaderboard */
-  .lb-row{display:flex;align-items:center;padding:14px 16px;border-radius:12px;margin-bottom:8px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.06)}
-  .lb-row.gold{background:rgba(255,215,0,0.12);border-color:rgba(255,215,0,0.3)}
+  .lb-row{
+    display:flex;align-items:center;padding:16px 18px;
+    border-radius:16px;margin-bottom:10px;
+    background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+    transition:transform 0.2s;
+  }
+  .lb-row:hover{transform:translateX(4px)}
+  .lb-row.gold{
+    background:linear-gradient(135deg,rgba(255,215,0,0.12),rgba(255,183,0,0.08));
+    border-color:rgba(255,215,0,0.3);
+    box-shadow:0 4px 15px rgba(255,215,0,0.1);
+  }
   .lb-row.silver{background:rgba(192,192,192,0.08);border-color:rgba(192,192,192,0.2)}
   .lb-row.bronze{background:rgba(205,127,50,0.08);border-color:rgba(205,127,50,0.2)}
-  .lb-rank{font-size:1.4em;width:36px;text-align:center}
-  .lb-name{flex:1;font-weight:600;font-size:0.95em}
-  .lb-score{font-size:1.3em;font-weight:800;color:#ff9933}
-  .lb-max{font-size:0.7em;color:#666}
+  .lb-rank{font-size:1.5em;width:40px;text-align:center}
+  .lb-name{flex:1;font-weight:700;font-size:0.95em}
+  .lb-score{font-size:1.4em;font-weight:900;color:#ff9933}
+  .lb-max{font-size:0.65em;color:#556}
 
-  .share-box{background:rgba(255,255,255,0.04);border:1px dashed rgba(255,255,255,0.2);border-radius:12px;padding:14px;font-size:0.78em;white-space:pre-line;line-height:1.6;color:#ccd}
+  .share-box{background:rgba(255,255,255,0.03);border:1px dashed rgba(255,255,255,0.15);border-radius:14px;padding:16px;font-size:0.78em;white-space:pre-line;line-height:1.6;color:#99aabb}
 
-  .tab-bar{display:flex;gap:6px;margin-bottom:16px}
-  .tab{flex:1;padding:10px;border-radius:12px;text-align:center;font-size:0.82em;font-weight:600;cursor:pointer;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08)}
-  .tab.active{background:rgba(255,153,51,0.2);border-color:#ff9933;color:#ff9933}
+  .tab-bar{display:flex;gap:6px;margin-bottom:18px}
+  .tab{
+    flex:1;padding:11px 6px;border-radius:14px;text-align:center;
+    font-size:0.78em;font-weight:700;cursor:pointer;
+    background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);
+    transition:all 0.2s;
+  }
+  .tab:hover{background:rgba(255,255,255,0.06)}
+  .tab.active{
+    background:linear-gradient(135deg,rgba(255,153,51,0.15),rgba(255,102,0,0.1));
+    border-color:rgba(255,153,51,0.4);color:#ff9933;
+    box-shadow:0 2px 10px rgba(255,153,51,0.1);
+  }
 
   .add-option-row{display:flex;gap:8px;align-items:center;margin-bottom:6px}
   .add-option-row input{flex:1;padding:8px 12px;font-size:0.85em}
-  .remove-option{background:rgba(244,67,54,0.2);color:#f44336;border:1px solid rgba(244,67,54,0.3);border-radius:6px;padding:6px 10px;font-size:0.75em;cursor:pointer}
+  .remove-option{background:rgba(244,67,54,0.15);color:#f44336;border:1px solid rgba(244,67,54,0.25);border-radius:8px;padding:6px 10px;font-size:0.75em;cursor:pointer}
+
+  /* Cricket ball divider */
+  .cricket-divider{
+    display:flex;align-items:center;gap:12px;margin:16px 0;color:#3a4d66;font-size:0.75em;
+  }
+  .cricket-divider::before,.cricket-divider::after{
+    content:'';flex:1;height:1px;
+    background:linear-gradient(90deg,transparent,rgba(255,255,255,0.1),transparent);
+  }
+
+  /* Confetti animation for locked predictions */
+  @keyframes confettiDrop{
+    0%{transform:translateY(-100px) rotate(0deg);opacity:1}
+    100%{transform:translateY(100vh) rotate(720deg);opacity:0}
+  }
+  .confetti{position:fixed;top:0;z-index:100;pointer-events:none;font-size:1.5em}
+
+  /* Score badge */
+  .score-badge{
+    display:inline-flex;align-items:center;gap:4px;
+    padding:3px 10px;border-radius:8px;font-size:0.75em;font-weight:700;
+    background:rgba(255,153,51,0.15);color:#ff9933;border:1px solid rgba(255,153,51,0.3);
+  }
+
+  /* Glow effect on primary buttons */
+  .btn-primary::after{
+    content:'';position:absolute;top:-50%;left:-50%;width:200%;height:200%;
+    background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 60%);
+    opacity:0;transition:opacity 0.3s;
+  }
+  .btn-primary:hover::after{opacity:1}
+
+  /* Player grid for many options */
+  .player-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .player-grid .btn-option{font-size:0.82em;padding:11px 8px}
+
+  /* Success screen */
+  .success-icon{font-size:4em;animation:bounceIn 0.5s ease}
+  @keyframes bounceIn{
+    0%{transform:scale(0);opacity:0}
+    50%{transform:scale(1.2)}
+    100%{transform:scale(1);opacity:1}
+  }
 </style>
 </head>
 <body>
+
+<!-- Floating cricket elements -->
+<div class="floating-balls" id="floating"></div>
+
 <div class="container">
   <div class="header">
-    <div class="emoji">🏏🏆</div>
-    <h1>T20 World Cup Final</h1>
-    <div class="match">
-      <span class="flag">🇮🇳</span> <span class="ind">INDIA</span>
-      <span class="vs">vs</span>
-      <span class="nz">NEW ZEALAND</span> <span class="flag">🇳🇿</span>
+    <div class="match-badge">🏏 ICC T20 WORLD CUP 2026</div>
+    <h1><span>THE FINAL</span></h1>
+
+    <div class="teams-row">
+      <div class="team-block">
+        <span class="team-flag">🇮🇳</span>
+        <span class="team-name team-india">INDIA</span>
+      </div>
+      <div class="vs-badge">VS</div>
+      <div class="team-block">
+        <span class="team-flag">🇳🇿</span>
+        <span class="team-name team-nz">NEW ZEALAND</span>
+      </div>
     </div>
-    <div class="details">March 8, 2026 · Narendra Modi Stadium, Ahmedabad</div>
-    <div class="details">India defending champions 🏆 · Final of 10th edition</div>
+
+    <div class="venue-info">
+      <strong>📍 Narendra Modi Stadium, Ahmedabad</strong><br>
+      March 8, 2026 · 132,000 capacity · Defending Champions 🏆
+    </div>
   </div>
 
   <div class="tab-bar">
@@ -99,8 +291,9 @@
   <!-- PREDICT TAB -->
   <div class="screen active" id="predict-tab">
     <div class="card" id="name-entry">
-      <h2>Enter Your Name</h2>
-      <input class="name-input" id="my-name" placeholder="Your name..." style="margin-bottom:10px">
+      <h2>🏏 Make Your Predictions</h2>
+      <p class="subtitle">6 questions · 10 points up for grabs · Who knows cricket best?</p>
+      <input class="name-input" id="my-name" placeholder="Enter your name..." style="margin-bottom:12px">
       <button class="btn btn-primary" onclick="startPredicting()">Start Predictions →</button>
     </div>
     <div id="questions-area" style="display:none"></div>
@@ -108,12 +301,12 @@
 
   <!-- STATUS TAB -->
   <div class="screen" id="status-tab">
-    <h2>👥 Who's Predicted So Far</h2>
+    <h2>👥 Who's Playing</h2>
     <p class="subtitle">Share the link — everyone predicts on their own phone!</p>
     <div id="status-list" class="status-grid"></div>
     <div class="card center" style="margin-top:10px">
-      <div style="font-size:0.8em;color:#8899bb">Share this link:</div>
-      <div style="font-size:0.85em;color:#ff9933;font-weight:600;margin-top:4px;word-break:break-all" id="share-url"></div>
+      <div style="font-size:0.8em;color:#6b7d96;margin-bottom:6px">Share this link with friends:</div>
+      <div style="font-size:0.82em;color:#ff9933;font-weight:600;margin-top:4px;word-break:break-all;padding:10px;background:rgba(255,153,51,0.06);border-radius:10px" id="share-url"></div>
       <div class="spacer"></div>
       <button class="btn btn-secondary" onclick="copyLink()" style="font-size:0.85em">📋 Copy Link</button>
     </div>
@@ -137,16 +330,16 @@
   <div class="screen" id="admin-tab">
     <h2>⚙️ Admin Settings</h2>
     <p class="subtitle">Manage questions and reset data</p>
-    
+
     <div class="card">
-      <h3 style="margin-bottom:12px">Current Questions (<span id="total-points">6</span> points total)</h3>
+      <h3 style="margin-bottom:12px;font-size:1em">Questions · <span class="score-badge" id="total-points-badge">10 pts</span></h3>
       <div id="questions-list"></div>
       <div class="spacer"></div>
       <button class="btn btn-secondary" onclick="showAddQuestion()">+ Add New Question</button>
     </div>
 
     <div class="card" id="add-question-form" style="display:none">
-      <h3 style="margin-bottom:12px">Add New Question</h3>
+      <h3 style="margin-bottom:12px;font-size:1em">Add New Question</h3>
       <div style="margin-bottom:8px">
         <input class="text-input" id="new-question-text" placeholder="Question text..." style="text-align:left">
       </div>
@@ -158,18 +351,12 @@
         <input class="number-input" id="new-question-points" placeholder="Points" min="0" max="10" step="0.5">
       </div>
       <div id="new-question-options" style="margin-bottom:8px">
-        <div style="font-size:0.85em;color:#8899bb;margin-bottom:6px">Answer Options:</div>
+        <div style="font-size:0.85em;color:#6b7d96;margin-bottom:6px">Answer Options:</div>
         <div id="options-list">
-          <div class="add-option-row">
-            <input class="text-input" placeholder="Option 1..." style="text-align:left">
-            <button class="remove-option" onclick="removeOption(this)">×</button>
-          </div>
-          <div class="add-option-row">
-            <input class="text-input" placeholder="Option 2..." style="text-align:left">
-            <button class="remove-option" onclick="removeOption(this)">×</button>
-          </div>
+          <div class="add-option-row"><input class="text-input" placeholder="Option 1..." style="text-align:left"><button class="remove-option" onclick="removeOption(this)">×</button></div>
+          <div class="add-option-row"><input class="text-input" placeholder="Option 2..." style="text-align:left"><button class="remove-option" onclick="removeOption(this)">×</button></div>
         </div>
-        <button class="btn btn-small" onclick="addOption()">+ Add Option</button>
+        <button class="btn btn-small" onclick="addOption()" style="margin-top:6px">+ Add Option</button>
       </div>
       <div class="form-row">
         <button class="btn btn-secondary" onclick="cancelAddQuestion()">Cancel</button>
@@ -178,7 +365,7 @@
     </div>
 
     <div class="card">
-      <h3 style="margin-bottom:12px">Reset Options</h3>
+      <h3 style="margin-bottom:12px;font-size:1em">Reset Options</h3>
       <div style="margin-bottom:8px">
         <button class="btn btn-secondary" onclick="resetToDefault()">Reset Questions to Default</button>
       </div>
@@ -188,6 +375,37 @@
 </div>
 
 <script>
+// ===== FLOATING CRICKET ELEMENTS =====
+(function(){
+  const items = ['🏏','🏆','⚾','🎯','🥇','⭐','🔥'];
+  const container = document.getElementById('floating');
+  for(let i = 0; i < 12; i++){
+    const el = document.createElement('div');
+    el.className = 'ball';
+    el.textContent = items[i % items.length];
+    el.style.left = Math.random() * 100 + '%';
+    el.style.animationDuration = (15 + Math.random() * 25) + 's';
+    el.style.animationDelay = Math.random() * 20 + 's';
+    el.style.fontSize = (0.8 + Math.random() * 0.8) + 'em';
+    container.appendChild(el);
+  }
+})();
+
+// ===== CONFETTI =====
+function launchConfetti(){
+  const emojis = ['🎉','🏏','🏆','⭐','🎊','🥳'];
+  for(let i = 0; i < 20; i++){
+    const c = document.createElement('div');
+    c.className = 'confetti';
+    c.textContent = emojis[i % emojis.length];
+    c.style.left = Math.random() * 100 + 'vw';
+    c.style.animation = `confettiDrop ${1.5 + Math.random() * 2}s ease-in forwards`;
+    c.style.animationDelay = Math.random() * 0.5 + 's';
+    document.body.appendChild(c);
+    setTimeout(() => c.remove(), 4000);
+  }
+}
+
 // ===== DEFAULT QUESTIONS =====
 const DEFAULT_QUESTIONS = [
   { id:'winner', text:'🏆 Who will WIN the World Cup?', type:'choice', options:['🇮🇳 India','🇳🇿 New Zealand'], points:3 },
@@ -198,201 +416,155 @@ const DEFAULT_QUESTIONS = [
   { id:'most_wickets', text:'🎯 Best bowler (most wickets)?', type:'choice', options:['Jasprit Bumrah','Arshdeep Singh','Varun Chakaravarthy','Hardik Pandya','Axar Patel','Matt Henry','Mitchell Santner','Lockie Ferguson','Ish Sodhi','Rachin Ravindra','Other'], points:1 }
 ];
 
-// ===== DATA =====
 let QUESTIONS = [...DEFAULT_QUESTIONS];
+function getMaxPoints(){ return QUESTIONS.reduce((s,q) => s + q.points, 0); }
 
-function getMaxPoints() {
-  return QUESTIONS.reduce((s,q) => s + q.points, 0);
-}
+const STORAGE_KEY = 'cricket_predictions_v4';
 
-// ===== STORAGE (localStorage-based, keyed by URL hash for shared state) =====
-const STORAGE_KEY = 'cricket_predictions_v3';
-
-function loadAll() {
-  try { 
-    const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { players: {}, results: {}, questions: null };
-    if (data.questions) {
-      QUESTIONS = data.questions;
-    }
+function loadAll(){
+  try{
+    const data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || { players:{}, results:{}, questions:null };
+    if(data.questions) QUESTIONS = data.questions;
     return data;
-  }
-  catch { return { players: {}, results: {}, questions: null }; }
+  }catch{ return { players:{}, results:{}, questions:null }; }
 }
 
-function saveAll(data) { 
-  data.questions = QUESTIONS;
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); 
-}
-
-function saveQuestions() {
-  const data = loadAll();
-  saveAll(data);
-  updateTotalPoints();
-}
+function saveAll(data){ data.questions = QUESTIONS; localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function saveQuestions(){ const data = loadAll(); saveAll(data); updateTotalPoints(); }
 
 // ===== TAB SWITCHING =====
-function switchTab(tab) {
-  document.querySelectorAll('.tab').forEach((t,i) => t.classList.remove('active'));
+function switchTab(tab){
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  if (tab === 'predict') { 
-    document.querySelectorAll('.tab')[0].classList.add('active'); 
-    document.getElementById('predict-tab').classList.add('active'); 
-  }
-  if (tab === 'status') { 
-    document.querySelectorAll('.tab')[1].classList.add('active'); 
-    document.getElementById('status-tab').classList.add('active'); 
-    renderStatus(); 
-  }
-  if (tab === 'leaderboard') { 
-    document.querySelectorAll('.tab')[2].classList.add('active'); 
-    document.getElementById('leaderboard-tab').classList.add('active'); 
-    renderLeaderboard(); 
-  }
-  if (tab === 'admin') { 
-    document.querySelectorAll('.tab')[3].classList.add('active'); 
-    document.getElementById('admin-tab').classList.add('active'); 
-    renderAdmin(); 
-  }
+  const tabs = {predict:0,status:1,leaderboard:2,admin:3};
+  const ids = {predict:'predict-tab',status:'status-tab',leaderboard:'leaderboard-tab',admin:'admin-tab'};
+  document.querySelectorAll('.tab')[tabs[tab]].classList.add('active');
+  document.getElementById(ids[tab]).classList.add('active');
+  if(tab==='status') renderStatus();
+  if(tab==='leaderboard') renderLeaderboard();
+  if(tab==='admin') renderAdmin();
 }
 
 // ===== PREDICT =====
 let myName = '';
 let myAnswers = {};
 
-function startPredicting() {
+function startPredicting(){
   const name = document.getElementById('my-name').value.trim();
-  if (!name) return;
+  if(!name) return;
   myName = name;
-  
   const data = loadAll();
-  if (data.players[name]) {
-    myAnswers = data.players[name];
-    alert('You already predicted! Updating your predictions.');
-  }
-  
+  if(data.players[name]){ myAnswers = data.players[name]; }
   document.getElementById('name-entry').style.display = 'none';
   renderQuestions();
   document.getElementById('questions-area').style.display = 'block';
 }
 
-function renderQuestions() {
+function renderQuestions(){
   const area = document.getElementById('questions-area');
-  area.innerHTML = `<div style="text-align:center;margin-bottom:14px;font-weight:700;color:#ff9933">${myName}'s Predictions</div>`;
-  
+  area.innerHTML = `<div style="text-align:center;margin-bottom:16px">
+    <span style="font-weight:800;font-size:1.1em;color:#ff9933">${myName}</span>
+    <span style="color:#6b7d96;font-size:0.85em"> · ${QUESTIONS.length} questions · ${getMaxPoints()} pts</span>
+  </div>`;
+
   QUESTIONS.forEach((q, idx) => {
     const card = document.createElement('div');
     card.className = 'card';
-    let html = `<div class="q-label">Q${idx+1}/${QUESTIONS.length} · <span class="q-points">${q.points} pt${q.points>1?'s':''}</span></div><div class="q-text">${q.text}</div>`;
-    
-    if (q.type === 'choice') {
-      if (q.options.length <= 3) {
+    let html = `<div class="q-label">Q${idx+1}/${QUESTIONS.length} <span class="q-points">${q.points} pt${q.points!==1?'s':''}</span></div><div class="q-text">${q.text}</div>`;
+
+    if(q.type === 'choice'){
+      if(q.options.length <= 3){
         html += `<div class="options-row">${q.options.map(o => `<button class="btn btn-option${myAnswers[q.id]===o?' selected':''}" data-q="${q.id}" data-v="${o}" onclick="pick(this)">${o}</button>`).join('')}</div>`;
       } else {
-        // 2 columns for many options
-        html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">`;
-        html += q.options.map(o => `<button class="btn btn-option${myAnswers[q.id]===o?' selected':''}" data-q="${q.id}" data-v="${o}" onclick="pick(this)" style="font-size:0.82em;padding:10px 8px">${o}</button>`).join('');
-        html += `</div>`;
+        html += `<div class="player-grid">${q.options.map(o => `<button class="btn btn-option${myAnswers[q.id]===o?' selected':''}" data-q="${q.id}" data-v="${o}" onclick="pick(this)">${o}</button>`).join('')}</div>`;
       }
     } else {
-      html += `<input type="number" class="number-input" data-q="${q.id}" placeholder="${q.placeholder}" value="${myAnswers[q.id]||''}" onchange="pickNum(this)">`;
+      html += `<input type="number" class="number-input" data-q="${q.id}" placeholder="${q.placeholder||'Enter number...'}" value="${myAnswers[q.id]||''}" onchange="pickNum(this)">`;
     }
     card.innerHTML = html;
     area.appendChild(card);
   });
-  
-  const submitDiv = document.createElement('div');
-  submitDiv.innerHTML = `<div class="spacer"></div><button class="btn btn-primary" onclick="submitMine()">🔒 Lock In My Predictions</button>`;
-  area.appendChild(submitDiv);
+
+  area.innerHTML += `<div class="spacer"></div><button class="btn btn-primary" onclick="submitMine()">🔒 Lock In My Predictions</button><div class="spacer"></div>`;
 }
 
-function pick(btn) {
+function pick(btn){
   const qId = btn.dataset.q;
   document.querySelectorAll(`[data-q="${qId}"]`).forEach(b => b.classList.remove('selected'));
   btn.classList.add('selected');
   myAnswers[qId] = btn.dataset.v;
 }
 
-function pickNum(input) {
-  myAnswers[input.dataset.q] = parseInt(input.value);
-}
+function pickNum(input){ myAnswers[input.dataset.q] = parseInt(input.value); }
 
-function submitMine() {
+function submitMine(){
   const answered = Object.keys(myAnswers).length;
-  if (answered < QUESTIONS.length) {
-    alert(`Answer all ${QUESTIONS.length} questions! (${answered}/${QUESTIONS.length} done)`);
-    return;
-  }
+  if(answered < QUESTIONS.length){ alert(`Answer all ${QUESTIONS.length} questions! (${answered}/${QUESTIONS.length} done)`); return; }
   const data = loadAll();
   data.players[myName] = { ...myAnswers };
   saveAll(data);
-  
+  launchConfetti();
+
   document.getElementById('questions-area').innerHTML = `
-    <div class="card center" style="padding:30px">
-      <div style="font-size:3em">✅</div>
-      <h2 style="margin-top:10px">Predictions Locked!</h2>
-      <p class="subtitle">${myName}, your predictions are saved.</p>
-      <p style="font-size:0.85em;color:#8899bb">Check the Status tab to see who else has predicted, or share the link with friends!</p>
+    <div class="card center" style="padding:36px 20px">
+      <div class="success-icon">🏏✅</div>
+      <h2 style="margin-top:14px;font-size:1.3em">Predictions Locked!</h2>
+      <div class="pitch-stripe"></div>
+      <p style="font-size:0.9em;color:#99aabb">${myName}, you're in the game!</p>
+      <p style="font-size:0.8em;color:#6b7d96;margin-top:8px">Check the Status tab to see who else has predicted, or share the link with your crew 🏏</p>
     </div>`;
-  renderStatus();
 }
 
 // ===== STATUS =====
-function renderStatus() {
+function renderStatus(){
   const data = loadAll();
   const list = document.getElementById('status-list');
   const names = Object.keys(data.players);
-  
-  if (names.length === 0) {
-    list.innerHTML = '<div class="subtitle center">No predictions yet. Be the first!</div>';
+  if(names.length === 0){
+    list.innerHTML = '<div class="subtitle center">No predictions yet. Be the first! 🏏</div>';
   } else {
-    list.innerHTML = names.map(n => 
-      `<div class="status-chip done">✅ ${n}</div>`
-    ).join('');
+    list.innerHTML = names.map(n => `<div class="status-chip">🏏 ${n}</div>`).join('');
   }
   document.getElementById('share-url').textContent = window.location.href;
 }
 
-function copyLink() {
-  navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied!')).catch(() => {});
+function copyLink(){
+  navigator.clipboard.writeText(window.location.href).then(() => alert('Link copied! 🏏')).catch(() => {});
 }
 
 // ===== LEADERBOARD =====
-function renderLeaderboard() {
+function renderLeaderboard(){
   const data = loadAll();
   const names = Object.keys(data.players);
   const hasResults = Object.keys(data.results).length >= QUESTIONS.length;
   const lb = document.getElementById('leaderboard');
-  
-  if (names.length === 0) {
-    lb.innerHTML = '<div class="subtitle center">No predictions yet!</div>';
-    return;
-  }
-  
+
+  if(names.length === 0){ lb.innerHTML = '<div class="subtitle center">No predictions yet!</div>'; return; }
+
   let scores = names.map(name => {
     let score = 0;
-    if (hasResults) {
+    if(hasResults){
       QUESTIONS.forEach(q => {
         const pred = data.players[name][q.id];
         const actual = data.results[q.id];
-        if (actual === undefined) return;
-        if (q.type === 'number' && q.scoring === 'range') {
+        if(actual === undefined) return;
+        if(q.type === 'number' && q.scoring === 'range'){
           const diff = Math.abs(pred - actual);
-          if (diff <= 10) score += q.points;
-          else if (diff <= 25) score += q.points * 0.5;
+          if(diff <= 10) score += q.points;
+          else if(diff <= 25) score += q.points * 0.5;
         } else {
-          if (pred === actual) score += q.points;
+          if(pred === actual) score += q.points;
         }
       });
     }
     return { name, score };
   });
-  
-  if (hasResults) scores.sort((a,b) => b.score - a.score);
-  
+
+  if(hasResults) scores.sort((a,b) => b.score - a.score);
   const medals = ['🥇','🥈','🥉'];
   const classes = ['gold','silver','bronze'];
   const maxPoints = getMaxPoints();
-  
+
   lb.innerHTML = scores.map((p,i) => {
     const cls = hasResults && i < 3 ? classes[i] : '';
     const rank = hasResults ? (medals[i] || `#${i+1}`) : '🏏';
@@ -402,283 +574,190 @@ function renderLeaderboard() {
       <div class="lb-score">${hasResults ? p.score : '?'}<span class="lb-max">/${maxPoints}</span></div>
     </div>`;
   }).join('');
-  
-  document.getElementById('lb-subtitle').textContent = hasResults 
-    ? '🏆 Final Scores!' 
+
+  document.getElementById('lb-subtitle').textContent = hasResults
+    ? '🏆 Final Scores!'
     : `${names.length} prediction${names.length>1?'s':''} locked. Enter results after the match!`;
 }
 
 // ===== ADMIN =====
-function renderAdmin() {
+function renderAdmin(){
   const list = document.getElementById('questions-list');
   list.innerHTML = '';
-  
   QUESTIONS.forEach((q, index) => {
     const div = document.createElement('div');
     div.className = 'admin-question';
-    
-    const optionsText = q.type === 'choice' ? `Options: ${q.options.join(', ')}` : `Type: Number input`;
-    
-    div.innerHTML = `
-      <div class="admin-question-header">
-        <div>
-          <div class="admin-question-text">${q.text}</div>
-          <div class="admin-question-details">${optionsText} • ${q.points} points</div>
-        </div>
-        <div class="admin-controls">
-          ${index > 0 ? `<button class="btn btn-small" onclick="moveQuestion(${index}, -1)">↑</button>` : ''}
-          ${index < QUESTIONS.length - 1 ? `<button class="btn btn-small" onclick="moveQuestion(${index}, 1)">↓</button>` : ''}
-          <button class="btn btn-small btn-danger" onclick="deleteQuestion(${index})">Delete</button>
-        </div>
-      </div>
-    `;
+    const optionsText = q.type === 'choice' ? `${q.options.length} options` : 'Number input';
+    div.innerHTML = `<div class="admin-question-header">
+      <div><div class="admin-question-text">${q.text}</div><div class="admin-question-details">${optionsText} · ${q.points} pts</div></div>
+      <div class="admin-controls">
+        ${index > 0 ? `<button class="btn btn-small" onclick="moveQuestion(${index},-1)">↑</button>` : ''}
+        ${index < QUESTIONS.length-1 ? `<button class="btn btn-small" onclick="moveQuestion(${index},1)">↓</button>` : ''}
+        <button class="btn btn-small btn-danger" onclick="deleteQuestion(${index})">✕</button>
+      </div></div>`;
     list.appendChild(div);
   });
-  
   updateTotalPoints();
 }
 
-function updateTotalPoints() {
-  const total = getMaxPoints();
-  const elem = document.getElementById('total-points');
-  if (elem) elem.textContent = total;
+function updateTotalPoints(){
+  const el = document.getElementById('total-points-badge');
+  if(el) el.textContent = getMaxPoints() + ' pts';
 }
 
-function moveQuestion(index, direction) {
-  const newIndex = index + direction;
-  if (newIndex < 0 || newIndex >= QUESTIONS.length) return;
-  
-  [QUESTIONS[index], QUESTIONS[newIndex]] = [QUESTIONS[newIndex], QUESTIONS[index]];
-  saveQuestions();
-  renderAdmin();
+function moveQuestion(i,d){
+  const n=i+d; if(n<0||n>=QUESTIONS.length)return;
+  [QUESTIONS[i],QUESTIONS[n]]=[QUESTIONS[n],QUESTIONS[i]];
+  saveQuestions(); renderAdmin();
 }
 
-function deleteQuestion(index) {
-  if (!confirm(`Delete question: "${QUESTIONS[index].text}"?`)) return;
-  QUESTIONS.splice(index, 1);
-  saveQuestions();
-  renderAdmin();
+function deleteQuestion(i){
+  if(!confirm(`Delete: "${QUESTIONS[i].text}"?`))return;
+  QUESTIONS.splice(i,1); saveQuestions(); renderAdmin();
 }
 
-function showAddQuestion() {
-  document.getElementById('add-question-form').style.display = 'block';
-  document.getElementById('new-question-text').focus();
-}
+function showAddQuestion(){ document.getElementById('add-question-form').style.display='block'; }
+function cancelAddQuestion(){ document.getElementById('add-question-form').style.display='none'; clearAddQuestionForm(); }
 
-function cancelAddQuestion() {
-  document.getElementById('add-question-form').style.display = 'none';
-  clearAddQuestionForm();
-}
-
-function clearAddQuestionForm() {
-  document.getElementById('new-question-text').value = '';
-  document.getElementById('new-question-type').value = 'choice';
-  document.getElementById('new-question-points').value = '';
-  
-  const optionsList = document.getElementById('options-list');
-  optionsList.innerHTML = `
-    <div class="add-option-row">
-      <input class="text-input" placeholder="Option 1..." style="text-align:left">
-      <button class="remove-option" onclick="removeOption(this)">×</button>
-    </div>
-    <div class="add-option-row">
-      <input class="text-input" placeholder="Option 2..." style="text-align:left">
-      <button class="remove-option" onclick="removeOption(this)">×</button>
-    </div>
-  `;
+function clearAddQuestionForm(){
+  document.getElementById('new-question-text').value='';
+  document.getElementById('new-question-type').value='choice';
+  document.getElementById('new-question-points').value='';
+  document.getElementById('options-list').innerHTML=`
+    <div class="add-option-row"><input class="text-input" placeholder="Option 1..." style="text-align:left"><button class="remove-option" onclick="removeOption(this)">×</button></div>
+    <div class="add-option-row"><input class="text-input" placeholder="Option 2..." style="text-align:left"><button class="remove-option" onclick="removeOption(this)">×</button></div>`;
   updateQuestionTypeOptions();
 }
 
-function updateQuestionTypeOptions() {
-  const type = document.getElementById('new-question-type').value;
-  const optionsDiv = document.getElementById('new-question-options');
-  optionsDiv.style.display = type === 'choice' ? 'block' : 'none';
+function updateQuestionTypeOptions(){
+  document.getElementById('new-question-options').style.display = document.getElementById('new-question-type').value === 'choice' ? 'block' : 'none';
 }
 
-function addOption() {
-  const optionsList = document.getElementById('options-list');
-  const newRow = document.createElement('div');
-  newRow.className = 'add-option-row';
-  newRow.innerHTML = `
-    <input class="text-input" placeholder="New option..." style="text-align:left">
-    <button class="remove-option" onclick="removeOption(this)">×</button>
-  `;
-  optionsList.appendChild(newRow);
+function addOption(){
+  const list = document.getElementById('options-list');
+  const row = document.createElement('div');
+  row.className = 'add-option-row';
+  row.innerHTML = `<input class="text-input" placeholder="New option..." style="text-align:left"><button class="remove-option" onclick="removeOption(this)">×</button>`;
+  list.appendChild(row);
 }
 
-function removeOption(btn) {
-  const optionsList = document.getElementById('options-list');
-  if (optionsList.children.length <= 2) {
-    alert('Must have at least 2 options!');
-    return;
-  }
+function removeOption(btn){
+  if(document.getElementById('options-list').children.length <= 2){ alert('Need at least 2 options!'); return; }
   btn.parentElement.remove();
 }
 
-function saveNewQuestion() {
+function saveNewQuestion(){
   const text = document.getElementById('new-question-text').value.trim();
   const type = document.getElementById('new-question-type').value;
   const points = parseFloat(document.getElementById('new-question-points').value);
-  
-  if (!text) {
-    alert('Enter question text!');
-    return;
-  }
-  
-  if (!points || points <= 0) {
-    alert('Enter valid points (greater than 0)!');
-    return;
-  }
-  
-  const newQuestion = {
-    id: 'custom_' + Date.now(),
-    text: text,
-    type: type,
-    points: points
-  };
-  
-  if (type === 'choice') {
-    const optionInputs = document.querySelectorAll('#options-list input');
-    const options = Array.from(optionInputs)
-      .map(input => input.value.trim())
-      .filter(option => option);
-    
-    if (options.length < 2) {
-      alert('Add at least 2 options!');
-      return;
-    }
-    
-    newQuestion.options = options;
-  } else {
-    newQuestion.placeholder = 'Enter number...';
-    newQuestion.scoring = 'exact';
-  }
-  
-  QUESTIONS.push(newQuestion);
-  saveQuestions();
-  renderAdmin();
-  cancelAddQuestion();
+  if(!text){ alert('Enter question text!'); return; }
+  if(!points || points <= 0){ alert('Enter valid points!'); return; }
+
+  const q = { id:'custom_'+Date.now(), text, type, points };
+  if(type === 'choice'){
+    const opts = Array.from(document.querySelectorAll('#options-list input')).map(i=>i.value.trim()).filter(Boolean);
+    if(opts.length < 2){ alert('Add at least 2 options!'); return; }
+    q.options = opts;
+  } else { q.placeholder = 'Enter number...'; q.scoring = 'exact'; }
+
+  QUESTIONS.push(q); saveQuestions(); renderAdmin(); cancelAddQuestion();
 }
 
-function resetToDefault() {
-  if (!confirm('Reset all questions to default? This will remove any custom questions you added.')) return;
-  QUESTIONS = [...DEFAULT_QUESTIONS];
-  saveQuestions();
-  renderAdmin();
+function resetToDefault(){
+  if(!confirm('Reset questions to default?'))return;
+  QUESTIONS=[...DEFAULT_QUESTIONS]; saveQuestions(); renderAdmin();
 }
 
-function resetAllData() {
-  if (!confirm('⚠️ This will delete ALL predictions, results, and custom questions. Are you sure?')) return;
-  if (!confirm('This cannot be undone! Really reset everything?')) return;
-  
-  localStorage.removeItem(STORAGE_KEY);
-  QUESTIONS = [...DEFAULT_QUESTIONS];
-  location.reload();
+function resetAllData(){
+  if(!confirm('⚠️ Delete ALL predictions, results, and custom questions?'))return;
+  if(!confirm('Cannot be undone! Really reset?'))return;
+  localStorage.removeItem(STORAGE_KEY); QUESTIONS=[...DEFAULT_QUESTIONS]; location.reload();
 }
 
 // ===== RESULTS ENTRY =====
-function showResultsForm() {
+function showResultsForm(){
   const area = document.getElementById('results-form-area');
-  if (area.style.display === 'block') { area.style.display = 'none'; return; }
-  
+  if(area.style.display==='block'){area.style.display='none';return;}
   const data = loadAll();
-  area.style.display = 'block';
-  area.innerHTML = '';
-  
+  area.style.display='block'; area.innerHTML='';
+
   QUESTIONS.forEach(q => {
     const card = document.createElement('div');
     card.className = 'card';
     let html = `<div class="q-text" style="font-size:0.95em">${q.text}</div>`;
-    if (q.type === 'choice') {
-      if (q.options.length <= 3) {
-        html += `<div class="options-row">${q.options.map(o => `<button class="btn btn-option${data.results[q.id]===o?' selected':''}" data-rq="${q.id}" data-rv="${o}" onclick="pickResult(this)" style="font-size:0.85em">${o}</button>`).join('')}</div>`;
+    if(q.type === 'choice'){
+      if(q.options.length<=3){
+        html += `<div class="options-row">${q.options.map(o=>`<button class="btn btn-option${data.results[q.id]===o?' selected':''}" data-rq="${q.id}" data-rv="${o}" onclick="pickResult(this)" style="font-size:0.85em">${o}</button>`).join('')}</div>`;
       } else {
-        html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px">${q.options.map(o => `<button class="btn btn-option${data.results[q.id]===o?' selected':''}" data-rq="${q.id}" data-rv="${o}" onclick="pickResult(this)" style="font-size:0.78em;padding:8px 6px">${o}</button>`).join('')}</div>`;
+        html += `<div class="player-grid">${q.options.map(o=>`<button class="btn btn-option${data.results[q.id]===o?' selected':''}" data-rq="${q.id}" data-rv="${o}" onclick="pickResult(this)">${o}</button>`).join('')}</div>`;
       }
     } else {
-      html += `<input type="number" class="number-input" data-rq="${q.id}" placeholder="${q.placeholder}" value="${data.results[q.id]||''}" onchange="setResult(this)">`;
+      html += `<input type="number" class="number-input" data-rq="${q.id}" placeholder="${q.placeholder||''}" value="${data.results[q.id]||''}" onchange="setResult(this)">`;
     }
-    card.innerHTML = html;
-    area.appendChild(card);
+    card.innerHTML = html; area.appendChild(card);
   });
-  
+
   area.innerHTML += `<div class="spacer"></div><button class="btn btn-primary" onclick="calcScores()">Calculate Scores! 🏆</button>`;
 }
 
-function pickResult(btn) {
-  const qId = btn.dataset.rq;
-  document.querySelectorAll(`[data-rq="${qId}"]`).forEach(b => b.classList.remove('selected'));
+function pickResult(btn){
+  const qId=btn.dataset.rq;
+  document.querySelectorAll(`[data-rq="${qId}"]`).forEach(b=>b.classList.remove('selected'));
   btn.classList.add('selected');
-  const data = loadAll();
-  data.results[qId] = btn.dataset.rv;
-  saveAll(data);
+  const data=loadAll(); data.results[qId]=btn.dataset.rv; saveAll(data);
 }
 
-function setResult(input) {
-  const data = loadAll();
-  data.results[input.dataset.rq] = parseInt(input.value);
-  saveAll(data);
-}
+function setResult(input){ const data=loadAll(); data.results[input.dataset.rq]=parseInt(input.value); saveAll(data); }
 
-function calcScores() {
-  const data = loadAll();
-  if (Object.keys(data.results).length < QUESTIONS.length) {
-    alert('Fill in all results!');
-    return;
-  }
-  document.getElementById('results-form-area').style.display = 'none';
+function calcScores(){
+  const data=loadAll();
+  if(Object.keys(data.results).length<QUESTIONS.length){alert('Fill in all results!');return;}
+  document.getElementById('results-form-area').style.display='none';
+  launchConfetti();
   renderLeaderboard();
 }
 
 // ===== SHARE =====
-function shareResults() {
-  const data = loadAll();
-  const names = Object.keys(data.players);
-  const hasResults = Object.keys(data.results).length >= QUESTIONS.length;
-  
-  let text = '🏏🏆 T20 WORLD CUP FINAL\n🇮🇳 India vs New Zealand 🇳🇿\nPrediction Game\n\n';
-  
-  if (hasResults) {
-    let scores = names.map(name => {
-      let score = 0;
-      QUESTIONS.forEach(q => {
-        const pred = data.players[name][q.id];
-        const actual = data.results[q.id];
-        if (actual === undefined) return;
-        if (q.type === 'number' && q.scoring === 'range') {
-          const diff = Math.abs(pred - actual);
-          if (diff <= 10) score += q.points;
-          else if (diff <= 25) score += q.points * 0.5;
-        } else {
-          if (pred === actual) score += q.points;
-        }
+function shareResults(){
+  const data=loadAll();
+  const names=Object.keys(data.players);
+  const hasResults=Object.keys(data.results).length>=QUESTIONS.length;
+  const maxPoints=getMaxPoints();
+
+  let text='🏏🏆 T20 WORLD CUP FINAL\n🇮🇳 India vs New Zealand 🇳🇿\nPrediction Game Results\n\n';
+
+  if(hasResults){
+    let scores=names.map(name=>{
+      let score=0;
+      QUESTIONS.forEach(q=>{
+        const pred=data.players[name][q.id], actual=data.results[q.id];
+        if(actual===undefined)return;
+        if(q.type==='number'&&q.scoring==='range'){
+          const diff=Math.abs(pred-actual);
+          if(diff<=10) score+=q.points; else if(diff<=25) score+=q.points*0.5;
+        } else { if(pred===actual) score+=q.points; }
       });
-      return { name, score };
-    }).sort((a,b) => b.score - a.score);
-    
-    text += '🏆 FINAL SCORES:\n';
-    const medals = ['🥇','🥈','🥉'];
-    const maxPoints = getMaxPoints();
-    scores.forEach((p,i) => { text += `${medals[i]||'  '} ${p.name}: ${p.score}/${maxPoints}\n`; });
+      return {name,score};
+    }).sort((a,b)=>b.score-a.score);
+
+    text+='🏆 FINAL SCORES:\n';
+    const medals=['🥇','🥈','🥉'];
+    scores.forEach((p,i)=>{ text+=`${medals[i]||'  '} ${p.name}: ${p.score}/${maxPoints}\n`; });
   } else {
-    text += `${names.length} predictions locked! 🔒\n`;
-    names.forEach(n => { text += `✅ ${n}\n`; });
-    text += `\nPredict here: ${window.location.href}`;
+    text+=`${names.length} predictions locked! 🔒\n`;
+    names.forEach(n=>{ text+=`🏏 ${n}\n`; });
+    text+=`\nPredict here: ${window.location.href}`;
   }
-  
-  const box = document.getElementById('share-box');
-  box.style.display = 'block';
-  box.textContent = text;
-  
-  if (navigator.share) {
-    navigator.share({ text }).catch(() => {});
-  } else if (navigator.clipboard) {
-    navigator.clipboard.writeText(text).then(() => alert('Copied!')).catch(() => {});
-  }
+
+  const box=document.getElementById('share-box');
+  box.style.display='block'; box.textContent=text;
+
+  if(navigator.share) navigator.share({text}).catch(()=>{});
+  else if(navigator.clipboard) navigator.clipboard.writeText(text).then(()=>alert('Copied! 🏏')).catch(()=>{});
 }
 
 // Init
-loadAll(); // Load saved questions if any
+loadAll();
 renderStatus();
 updateQuestionTypeOptions();
 </script>
