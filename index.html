@@ -293,7 +293,7 @@
     <div class="card" id="name-entry">
       <h2>🏏 Make Your Predictions</h2>
       <p class="subtitle">6 questions · 10 points up for grabs · Who knows cricket best?</p>
-      <p class="subtitle">📱 Pass the phone — each person takes a turn!</p>
+      <p class="subtitle">📱 Everyone predicts on their own phone — syncs automatically!</p>
       <input class="name-input" id="my-name" placeholder="Enter your name..." style="margin-bottom:12px">
       <button class="btn btn-primary" onclick="startPredicting()">Start Predictions →</button>
     </div>
@@ -303,7 +303,7 @@
   <!-- STATUS TAB -->
   <div class="screen" id="status-tab">
     <h2>👥 Who's Playing</h2>
-    <p class="subtitle">Everyone who's locked in their predictions</p>
+    <p class="subtitle">Syncs across all devices · auto-refreshes every 10s</p>
     <div id="status-list" class="status-grid"></div>
     <div class="card center" style="margin-top:10px">
       <div style="font-size:0.8em;color:#6b7d96;margin-bottom:6px">Share this link with friends:</div>
@@ -421,6 +421,11 @@ let QUESTIONS = [...DEFAULT_QUESTIONS];
 function getMaxPoints(){ return QUESTIONS.reduce((s,q) => s + q.points, 0); }
 
 const STORAGE_KEY = 'cricket_predictions_v4';
+const BLOB_ID = '019ccb3f-b70a-7099-a251-0d6a9d3c2e55';
+const BLOB_URL = `https://jsonblob.com/api/jsonBlob/${BLOB_ID}`;
+
+let _cachedData = null;
+let _syncing = false;
 
 function loadAll(){
   try{
@@ -430,7 +435,48 @@ function loadAll(){
   }catch{ return { players:{}, results:{}, questions:null }; }
 }
 
-function saveAll(data){ data.questions = QUESTIONS; localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+function saveAll(data){
+  data.questions = QUESTIONS;
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  // Sync to cloud
+  syncToCloud(data);
+}
+
+async function syncToCloud(data){
+  if(_syncing) return;
+  _syncing = true;
+  try{
+    // Merge with cloud data first
+    const cloud = await fetchCloud();
+    const merged = { players:{...cloud.players, ...data.players}, results:{...cloud.results, ...data.results}, questions: data.questions };
+    await fetch(BLOB_URL, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify(merged) });
+    // Update local with merged
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+  }catch(e){ console.log('Cloud sync failed, using local:', e); }
+  _syncing = false;
+}
+
+async function fetchCloud(){
+  try{
+    const res = await fetch(BLOB_URL);
+    return await res.json();
+  }catch{ return { players:{}, results:{} }; }
+}
+
+async function pullFromCloud(){
+  try{
+    const cloud = await fetchCloud();
+    if(cloud && cloud.players){
+      const local = loadAll();
+      const merged = { players:{...cloud.players, ...local.players}, results:{...cloud.results, ...local.results}, questions: local.questions };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(merged));
+      if(merged.questions) QUESTIONS = merged.questions;
+      renderStatus();
+      renderLeaderboard();
+    }
+  }catch(e){ console.log('Pull failed:', e); }
+}
+
 function saveQuestions(){ const data = loadAll(); saveAll(data); updateTotalPoints(); }
 
 // ===== TAB SWITCHING =====
@@ -684,7 +730,8 @@ function resetToDefault(){
 function resetAllData(){
   if(!confirm('⚠️ Delete ALL predictions, results, and custom questions?'))return;
   if(!confirm('Cannot be undone! Really reset?'))return;
-  localStorage.removeItem(STORAGE_KEY); QUESTIONS=[...DEFAULT_QUESTIONS]; location.reload();
+  localStorage.removeItem(STORAGE_KEY); QUESTIONS=[...DEFAULT_QUESTIONS];
+  fetch(BLOB_URL, { method:'PUT', headers:{'Content-Type':'application/json'}, body:'{"players":{},"results":{}}' }).finally(()=>location.reload());
 }
 
 // ===== RESULTS ENTRY =====
@@ -773,6 +820,10 @@ function shareResults(){
 loadAll();
 renderStatus();
 updateQuestionTypeOptions();
+
+// Pull cloud data on load and auto-refresh every 10 seconds
+pullFromCloud();
+setInterval(pullFromCloud, 10000);
 </script>
 </body>
 </html>
