@@ -293,6 +293,7 @@
     <div class="card" id="name-entry">
       <h2>🏏 Make Your Predictions</h2>
       <p class="subtitle">6 questions · 10 points up for grabs · Who knows cricket best?</p>
+      <p class="subtitle">📱 Pass the phone — each person takes a turn!</p>
       <input class="name-input" id="my-name" placeholder="Enter your name..." style="margin-bottom:12px">
       <button class="btn btn-primary" onclick="startPredicting()">Start Predictions →</button>
     </div>
@@ -302,7 +303,7 @@
   <!-- STATUS TAB -->
   <div class="screen" id="status-tab">
     <h2>👥 Who's Playing</h2>
-    <p class="subtitle">Share the link — everyone predicts on their own phone!</p>
+    <p class="subtitle">Everyone who's locked in their predictions</p>
     <div id="status-list" class="status-grid"></div>
     <div class="card center" style="margin-top:10px">
       <div style="font-size:0.8em;color:#6b7d96;margin-bottom:6px">Share this link with friends:</div>
@@ -511,8 +512,20 @@ function submitMine(){
       <h2 style="margin-top:14px;font-size:1.3em">Predictions Locked!</h2>
       <div class="pitch-stripe"></div>
       <p style="font-size:0.9em;color:#99aabb">${myName}, you're in the game!</p>
-      <p style="font-size:0.8em;color:#6b7d96;margin-top:8px">Check the Status tab to see who else has predicted, or share the link with your crew 🏏</p>
+      <div class="spacer"></div>
+      <button class="btn btn-primary" onclick="nextPlayer()">📱 Next Player's Turn →</button>
+      <p style="font-size:0.78em;color:#6b7d96;margin-top:10px">Pass the phone to the next person!</p>
     </div>`;
+}
+
+function nextPlayer(){
+  myName = '';
+  myAnswers = {};
+  document.getElementById('questions-area').style.display = 'none';
+  document.getElementById('name-entry').style.display = 'block';
+  document.getElementById('my-name').value = '';
+  document.getElementById('my-name').focus();
+  switchTab('predict');
 }
 
 // ===== STATUS =====
